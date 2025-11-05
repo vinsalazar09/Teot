@@ -1,812 +1,2489 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0a1a1f">
-<title>VRVS v5.1.1 – Circuit Final (stable)</title>
-<style>
-/* ======== CIRCUIT THEME (âmbar + turquesa) – compacto e estável ======== */
-:root{
-  --bg:#0a1a1f; --bg2:#0c1418; --panel:#112129; --grid:#0f2a30;
-  --txt:#e8fbff; --muted:#9ac2c9;
-  --tz:#00ced1; --tz2:#00ffe0;
-  --am:#ff7f50; --am2:#ffa366; --warn:#e55100;
-  --ok:#14c38e; --err:#ef4444;
-  --glass:rgba(17,33,41,.6); --glass2:rgba(17,33,41,.9);
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{background:var(--bg);color:var(--txt);font:14px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;min-height:100%}
-.header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,rgba(10,26,31,.95),rgba(10,26,31,.7));backdrop-filter:saturate(140%) blur(10px);padding:16px 14px;border-bottom:1px solid rgba(0,206,209,.18)}
-.h1{font-weight:900;font-size:20px;letter-spacing:.4px;background:linear-gradient(90deg,var(--tz2),var(--am2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.h2{color:var(--tz);font-weight:800;font-size:12px;letter-spacing:2px;text-transform:uppercase;opacity:.9}
-.tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 10px;border-bottom:1px solid rgba(0,206,209,.1)}
-.tab{flex:0 0 auto;background:var(--glass);border:1px solid rgba(0,206,209,.25);color:var(--tz);padding:8px 12px;border-radius:10px;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap}
-.tab.active{border-color:var(--am);color:var(--am2);box-shadow:0 0 0 1px rgba(255,127,80,.18) inset}
-.content{padding:18px 10px 80px}
-.card{background:linear-gradient(180deg,rgba(17,33,41,.72),rgba(17,33,41,.55));border:1px solid rgba(0,206,209,.2);border-radius:16px;padding:18px;margin:10px 0}
-.card .title{font-weight:900;color:var(--tz2);margin-bottom:12px}
-.form-group{margin:10px 0}
-.form-label{display:block;color:var(--tz);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
-.form-input,.form-select,.form-textarea{width:100%;background:rgba(10,26,31,.7);border:1px solid rgba(0,206,209,.25);color:var(--txt);border-radius:10px;padding:10px 12px}
-.form-textarea{min-height:96px;resize:vertical}
-.row{display:grid;gap:10px}
-@media(min-width:720px){.row-2{grid-template-columns:1fr 1fr}.row-3{grid-template-columns:1fr 1fr 1fr}}
-.btn{background:linear-gradient(90deg,var(--am),var(--warn));border:0;color:white;font-weight:900;padding:12px 16px;border-radius:12px;cursor:pointer}
-.btn.secondary{background:linear-gradient(90deg,rgba(0,206,209,.25),rgba(0,206,209,.18));color:var(--tz)}
-.btn.small{font-size:12px;padding:8px 10px;border-radius:8px}
-.data-table{width:100%;border-collapse:separate;border-spacing:0 8px}
-.data-table th{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--tz);text-align:left;padding:10px;border-bottom:1px solid rgba(0,206,209,.22)}
-.data-table td{background:rgba(17,33,41,.45);padding:10px;border-top:1px solid rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.03)}
-.message{position:fixed;right:16px;top:86px;z-index:99;background:var(--glass2);border:1px solid rgba(0,206,209,.3);border-left:4px solid var(--ok);padding:10px 12px;border-radius:10px}
-.message.error{border-left-color:var(--err)}
-.empty{opacity:.7;text-align:center;padding:24px}
-.badge{display:inline-block;padding:4px 8px;border-radius:8px;border:1px solid rgba(0,206,209,.25);color:var(--tz);font-size:11px;font-weight:700}
-.grid-bg{position:fixed;inset:0;z-index:-1;background-image:linear-gradient(rgba(0,206,209,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(0,206,209,.07) 1px,transparent 1px);background-size:50px 50px}
-hr.sep{border:0;border-top:1px dashed rgba(0,206,209,.2);margin:12px 0}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a1a1f">
+    <title>🧠 VRVS v5.1 FINAL – TEOT 2026</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            /* CORES CIRCUIT TECH */
+            --bg-dark: #0a1a1f;
+            --bg-darker: #051015;
+            
+            /* TURQUESA TECH */
+            --turquesa-neon: #00FFE0;
+            --turquesa-light: #00CED1;
+            --turquesa-main: #0d9488;
+            --turquesa-dark: #0f766e;
+            --turquesa-darker: #134e4a;
+            
+            /* ÂMBAR COBRE TECH */
+            --cobre-neon: #FFAA00;
+            --cobre-light: #FFA366;
+            --cobre-main: #FF7F50;
+            --cobre-dark: #E55100;
+            --cobre-darker: #B23A00;
+            
+            /* GLASSMORPHISM */
+            --glass-bg: rgba(20, 35, 45, 0.4);
+            --glass-border: rgba(255, 127, 80, 0.3);
+            --text-light: rgba(255, 255, 255, 0.95);
+        }
+
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            background: var(--bg-dark) !important;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* CIRCUIT BOARD BACKGROUND */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(13, 148, 136, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 127, 80, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(0, 206, 209, 0.1) 0%, transparent 70%),
+                var(--bg-dark);
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        /* GRID CIRCUIT ANIMADO */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 206, 209, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 206, 209, 0.15) 1px, transparent 1px),
+                linear-gradient(rgba(255, 127, 80, 0.05) 2px, transparent 2px),
+                linear-gradient(90deg, rgba(255, 127, 80, 0.05) 2px, transparent 2px);
+            background-size: 50px 50px, 50px 50px, 100px 100px, 100px 100px;
+            pointer-events: none;
+            z-index: 1;
+            animation: gridPulse 6s ease-in-out infinite;
+        }
+        
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.3; transform: translate(0, 0); }
+            50% { opacity: 0.6; transform: translate(-2px, -2px); }
+        }
+        
+        .container {
+            position: relative;
+            z-index: 2;
+            padding-bottom: 100px;
+        }
+        
+        /* HEADER NEON TECH */
+        .header {
+            background: rgba(10, 26, 31, 0.95);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            padding: 22px 20px;
+            text-align: center;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.8),
+                0 0 40px rgba(0, 206, 209, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 2px solid transparent;
+            border-image: linear-gradient(90deg, 
+                var(--turquesa-neon) 0%, 
+                var(--cobre-main) 25%, 
+                var(--turquesa-main) 50%,
+                var(--cobre-neon) 75%,
+                var(--turquesa-neon) 100%
+            ) 1;
+            animation: borderFlow 4s linear infinite;
+        }
+        
+        @keyframes borderFlow {
+            0% { border-image-source: linear-gradient(90deg, 
+                var(--turquesa-neon) 0%, var(--cobre-main) 25%, 
+                var(--turquesa-main) 50%, var(--cobre-neon) 75%, var(--turquesa-neon) 100%); }
+            100% { border-image-source: linear-gradient(90deg, 
+                var(--turquesa-neon) 100%, var(--turquesa-neon) 0%, 
+                var(--cobre-main) 25%, var(--turquesa-main) 50%, var(--cobre-neon) 75%); }
+        }
+        
+        .header-title {
+            background: linear-gradient(135deg, 
+                var(--turquesa-neon) 0%, 
+                var(--turquesa-light) 25%, 
+                var(--cobre-light) 50%, 
+                var(--cobre-neon) 75%,
+                var(--turquesa-neon) 100%
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 26px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 0 20px rgba(0, 255, 224, 0.5));
+            animation: titlePulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes titlePulse {
+            0%, 100% { 
+                filter: drop-shadow(0 0 20px rgba(0, 255, 224, 0.5));
+                transform: scale(1);
+            }
+            50% { 
+                filter: drop-shadow(0 0 30px rgba(255, 170, 0, 0.8));
+                transform: scale(1.02);
+            }
+        }
+        
+        .header-subtitle {
+            color: var(--turquesa-light);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px rgba(0, 206, 209, 0.7);
+        }
+        
+        /* TABS GLASSMORPHISM - SEM SCROLL CORTADO */
+        .tabs {
+            display: flex;
+            gap: 12px;
+            padding: 20px 15px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            background: rgba(10, 26, 31, 0.6);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 206, 209, 0.1);
+        }
+        
+        .tabs::-webkit-scrollbar { display: none; }
+        
+        .tab {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            color: var(--turquesa-light);
+            border: 1px solid rgba(0, 206, 209, 0.2);
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 4px 12px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        
+        .tab:hover {
+            border-color: var(--cobre-main);
+            transform: translateY(-2px);
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, 
+                rgba(255, 127, 80, 0.2), 
+                rgba(0, 206, 209, 0.2)
+            );
+            color: var(--cobre-light);
+            border-color: var(--cobre-main);
+            box-shadow: 
+                0 6px 20px rgba(255, 127, 80, 0.4),
+                0 0 40px rgba(255, 127, 80, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        /* CONTENT SECTIONS */
+        .content {
+            padding: 20px 15px;
+        }
+        
+        .section {
+            display: none;
+            animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .section.active { display: block; }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px) scale(0.95);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        /* CARDS GLASSMORPHISM NEON - SEM HOVER MANCHADO */
+        .card {
+            background: linear-gradient(135deg,
+                rgba(20, 35, 45, 0.6),
+                rgba(30, 50, 60, 0.4)
+            );
+            backdrop-filter: blur(20px) saturate(150%);
+            -webkit-backdrop-filter: blur(20px) saturate(150%);
+            border: 1px solid rgba(0, 206, 209, 0.3);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.5),
+                0 0 80px rgba(0, 206, 209, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: var(--cobre-main);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.5),
+                0 0 80px rgba(255, 127, 80, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+        
+        .card-title {
+            background: linear-gradient(135deg, 
+                var(--turquesa-light) 0%, 
+                var(--cobre-light) 100%
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(255, 127, 80, 0.3);
+        }
+        
+        /* FORM ELEMENTS NEON */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            color: var(--turquesa-light);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            text-shadow: 0 0 10px rgba(0, 206, 209, 0.5);
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            background: rgba(10, 26, 31, 0.6);
+            border: 1px solid rgba(0, 206, 209, 0.3);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: var(--text-light);
+            font-size: 15px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--cobre-main);
+            box-shadow: 
+                0 0 20px rgba(255, 127, 80, 0.3),
+                inset 0 0 20px rgba(255, 127, 80, 0.05);
+            background: rgba(10, 26, 31, 0.8);
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+        
+        /* BUTTONS NEON */
+        .btn {
+            width: 100%;
+            background: linear-gradient(135deg, 
+                var(--cobre-main) 0%, 
+                var(--cobre-dark) 100%
+            );
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 24px;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 4px 15px rgba(255, 127, 80, 0.4),
+                0 0 30px rgba(255, 127, 80, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 20px rgba(255, 127, 80, 0.5),
+                0 0 40px rgba(255, 127, 80, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg,
+                rgba(0, 206, 209, 0.3),
+                rgba(0, 148, 136, 0.3)
+            );
+            box-shadow: 
+                0 4px 15px rgba(0, 206, 209, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, 
+                var(--cobre-dark) 0%, 
+                var(--cobre-darker) 100%
+            );
+            margin-top: 12px;
+        }
+        
+        .btn-small {
+            width: auto;
+            padding: 10px 16px;
+            font-size: 11px;
+        }
+        
+        .btn-edit {
+            background: transparent;
+            border: 1px solid rgba(0, 206, 209, 0.3);
+            padding: 6px 10px;
+            border-radius: 8px;
+            color: var(--turquesa-light);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-edit:hover {
+            border-color: var(--cobre-main);
+            color: var(--cobre-light);
+            background: rgba(255, 127, 80, 0.1);
+        }
+        
+        /* STATS GRID */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg,
+                rgba(20, 35, 45, 0.7),
+                rgba(30, 50, 60, 0.5)
+            );
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 206, 209, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, 
+                rgba(255, 127, 80, 0.1) 0%, 
+                transparent 70%
+            );
+            animation: statPulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes statPulse {
+            0%, 100% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 900;
+            background: linear-gradient(135deg, 
+                var(--turquesa-light) 0%, 
+                var(--cobre-light) 100%
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 0 20px rgba(255, 127, 80, 0.5));
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(0, 206, 209, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* TASK ITEMS - CORES AJUSTADAS */
+        .task-item {
+            background: linear-gradient(135deg,
+                rgba(20, 35, 45, 0.6),
+                rgba(30, 50, 60, 0.4)
+            );
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 206, 209, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .task-item.priority-5 {
+            border-color: var(--cobre-main);
+            background: linear-gradient(135deg,
+                rgba(255, 127, 80, 0.1),
+                rgba(229, 81, 0, 0.05)
+            );
+            box-shadow: 0 0 30px rgba(255, 127, 80, 0.2);
+        }
+        
+        .task-item.priority-4 {
+            border-color: var(--cobre-light);
+            box-shadow: 0 0 20px rgba(255, 163, 102, 0.2);
+        }
+        
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .task-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--cobre-light);
+            margin-bottom: 12px;
+            text-shadow: 0 0 20px rgba(255, 127, 80, 0.5);
+        }
+        
+        .task-date {
+            font-size: 11px;
+            color: rgba(0, 206, 209, 0.7);
+            font-weight: 600;
+        }
+        
+        .task-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .task-detail-item {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+            padding: 4px 8px;
+            background: rgba(0, 206, 209, 0.1);
+            border-radius: 6px;
+        }
+        
+        .task-tipo {
+            background: linear-gradient(135deg,
+                rgba(0, 206, 209, 0.2),
+                rgba(13, 148, 136, 0.1)
+            );
+            color: var(--turquesa-light);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(0, 206, 209, 0.3);
+        }
+        
+        .task-suggestion {
+            background: linear-gradient(135deg,
+                rgba(0, 206, 209, 0.1),
+                rgba(13, 148, 136, 0.05)
+            );
+            border: 1px solid rgba(0, 206, 209, 0.3);
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .task-suggestion::before {
+            content: '💡';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 20px;
+            opacity: 0.5;
+        }
+        
+        .task-suggestion-label {
+            color: var(--turquesa-light);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        
+        .task-suggestion-text {
+            color: var(--text-light);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(0, 206, 209, 0.5);
+            font-size: 15px;
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            filter: drop-shadow(0 0 20px rgba(0, 206, 209, 0.3));
+        }
+        
+        /* DATA TABLE */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+            font-size: 13px;
+        }
+        
+        .data-table th {
+            background: linear-gradient(135deg,
+                rgba(0, 206, 209, 0.1),
+                rgba(13, 148, 136, 0.05)
+            );
+            color: var(--turquesa-light);
+            padding: 12px 8px;
+            font-weight: 700;
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(0, 206, 209, 0.3);
+        }
+        
+        .data-table td {
+            padding: 12px 8px;
+            background: rgba(20, 35, 45, 0.3);
+            border-top: 1px solid rgba(0, 206, 209, 0.1);
+            border-bottom: 1px solid rgba(0, 206, 209, 0.1);
+        }
+        
+        .data-table td:first-child {
+            border-left: 1px solid rgba(0, 206, 209, 0.1);
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+        
+        .data-table td:last-child {
+            border-right: 1px solid rgba(0, 206, 209, 0.1);
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+        
+        .data-table tr:hover td {
+            background: rgba(0, 206, 209, 0.05);
+            box-shadow: 0 0 20px rgba(0, 206, 209, 0.1);
+        }
+        
+        /* MESSAGES */
+        #importMessage, #feedbackMessage {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .message {
+            background: linear-gradient(135deg,
+                rgba(10, 26, 31, 0.95),
+                rgba(20, 35, 45, 0.95)
+            );
+            backdrop-filter: blur(20px);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+            animation: slideInMessage 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes slideInMessage {
+            from { 
+                transform: translateX(120%);
+                opacity: 0;
+            }
+            to { 
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .message.success {
+            border-left: 4px solid var(--turquesa-neon);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.8),
+                0 0 40px rgba(0, 206, 209, 0.3);
+        }
+        
+        .message.error {
+            border-left: 4px solid var(--cobre-main);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.8),
+                0 0 40px rgba(255, 127, 80, 0.3);
+        }
+        
+        /* NOTIFICATION ITEMS */
+        .notification-item {
+            background: linear-gradient(135deg,
+                rgba(20, 35, 45, 0.6),
+                rgba(30, 50, 60, 0.4)
+            );
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 206, 209, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .notification-item.urgent {
+            border-color: var(--cobre-main);
+            background: linear-gradient(135deg,
+                rgba(255, 127, 80, 0.1),
+                rgba(229, 81, 0, 0.05)
+            );
+            box-shadow: 0 0 30px rgba(255, 127, 80, 0.2);
+        }
+        
+        .notification-title {
+            color: var(--cobre-light);
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            text-shadow: 0 0 10px rgba(255, 127, 80, 0.5);
+        }
+        
+        .notification-text {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+        }
+        
+        /* DATE RANGE CONTROLS */
+        .date-range-controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .date-range-controls .form-input {
+            flex: 1;
+        }
+        
+        /* EDIT DATE FORM */
+        .edit-date-form {
+            background: linear-gradient(135deg,
+                rgba(0, 206, 209, 0.05),
+                rgba(13, 148, 136, 0.02)
+            );
+            border: 1px solid rgba(0, 206, 209, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .edit-date-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .edit-date-row select {
+            flex: 2;
+        }
+        
+        .edit-date-row input {
+            flex: 1;
+        }
+        
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg,
+                rgba(20, 35, 45, 0.95),
+                rgba(30, 50, 60, 0.95)
+            );
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--cobre-main);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: modalSlide 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes modalSlide {
+            from {
+                transform: translateY(-50px) scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .modal-title {
+            background: linear-gradient(135deg, 
+                var(--turquesa-light) 0%, 
+                var(--cobre-light) 100%
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 20px;
+            font-weight: 800;
+        }
+        
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--cobre-light);
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            transform: rotate(90deg);
+        }
+        
+        /* SCROLL BAR CUSTOM */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, 
+                var(--turquesa-dark), 
+                var(--cobre-dark)
+            );
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, 
+                var(--turquesa-main), 
+                var(--cobre-main)
+            );
+        }
+    </style>
 </head>
 <body>
-<div class="grid-bg"></div>
-<header class="header">
-  <div class="h1">🧠 VRVS CIRCUIT TECH</div>
-  <div class="h2">TEOT 2026 • v5.1.1</div>
-</header>
-
-<nav class="tabs" id="tabs">
-  <button class="tab active" data-target="dados">📊 Dados</button>
-  <button class="tab" data-target="cadastro">➕ Cadastro</button>
-  <button class="tab" data-target="feedback">📝 Feedback</button>
-  <button class="tab" data-target="tarefa">📋 Tarefa</button>
-  <button class="tab" data-target="agenda">📅 Agenda</button>
-  <button class="tab" data-target="pendencias">🔔 Pendências</button>
-  <button class="tab" data-target="stats">📈 Estatísticas</button>
-  <button class="tab" data-target="historico">📜 Histórico</button>
-  <button class="tab" data-target="relatorios">📊 Relatórios</button>
-  <button class="tab" data-target="importar">📥 Importar</button>
-  <button class="tab" data-target="exportar">📤 Exportar</button>
-</nav>
-
-<main class="content">
-
-<section id="dados" class="card">
-  <div class="title">📊 Banco de dados</div>
-  <div style="overflow-x:auto">
-    <table class="data-table">
-      <thead><tr>
-        <th>Área</th><th>Tema</th><th>Status</th><th>Prior.</th><th>Rend.</th>
-        <th>Sessões</th><th>Últ.Estudo</th><th>Agenda</th><th style="text-align:center">Ações</th>
-      </tr></thead>
-      <tbody id="dadosTable"></tbody>
-    </table>
-  </div>
-</section>
-
-<section id="cadastro" class="card" hidden>
-  <div class="title">➕ Adicionar tema</div>
-  <form id="formCadastro" class="row row-3">
-    <div class="form-group">
-      <label class="form-label">Área</label>
-      <input id="cadArea" class="form-input" placeholder="Ex: Ombro e Cotovelo" required>
+    <div id="importMessage"></div>
+    <div id="feedbackMessage"></div>
+    
+    <!-- MODAL DE EDIÇÃO -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">✏️ EDITAR TEMA</h2>
+                <button class="modal-close" onclick="closeEditModal()">×</button>
+            </div>
+            <form id="editForm">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <label class="form-label">Área</label>
+                    <input type="text" class="form-input" id="editArea" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tema</label>
+                    <input type="text" class="form-input" id="editTema" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Prioridade</label>
+                    <input type="number" class="form-input" id="editPrioridade" min="1" max="5" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="editStatus">
+                        <option value="Planejado">Planejado</option>
+                        <option value="Em estudo">Em estudo</option>
+                        <option value="Concluído">Concluído</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">💾 SALVAR ALTERAÇÕES</button>
+            </form>
+        </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Tema</label>
-      <input id="cadTema" class="form-input" placeholder="Ex: Sd manguito rotador" required>
+    
+    <div class="container">
+        <div class="header">
+            <div class="header-title">🧠 VRVS CIRCUIT TECH</div>
+            <div class="header-subtitle">TEOT 2026 • v5.1</div>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="showSection('dados')">📊 Dados</div>
+            <div class="tab" onclick="showSection('cadastro')">➕ Cadastro</div>
+            <div class="tab" onclick="showSection('feedback')">📝 Feedback</div>
+            <div class="tab" onclick="showSection('tarefa')">📋 Tarefa</div>
+            <div class="tab" onclick="showSection('agenda')">📅 Agenda</div>
+            <div class="tab" onclick="showSection('pendencias')">🔔 Pendências</div>
+            <div class="tab" onclick="showSection('stats')">📈 Estatísticas</div>
+            <div class="tab" onclick="showSection('historico')">📜 Histórico</div>
+            <div class="tab" onclick="showSection('relatorios')">📊 Relatórios</div>
+            <div class="tab" onclick="showSection('importar')">📥 Importar</div>
+            <div class="tab" onclick="showSection('exportar')">📤 Exportar</div>
+        </div>
+        
+        <div class="content">
+            <!-- DADOS -->
+            <div id="dados" class="section active">
+                <div class="card">
+                    <div class="card-title">📊 BANCO DE DADOS</div>
+                    <div style="overflow-x: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Área</th>
+                                    <th>Tema</th>
+                                    <th>Status</th>
+                                    <th>Prior.</th>
+                                    <th>Rend.</th>
+                                    <th>Sessões</th>
+                                    <th>Últ.Estudo</th>
+                                    <th>Agenda</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dadosTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TAREFA -->
+            <div id="tarefa" class="section">
+                <div class="card">
+                    <div class="card-title">📋 MISSÕES DO DIA</div>
+                    <div id="tarefasContainer"></div>
+                </div>
+            </div>
+            
+            <!-- AGENDA -->
+            <div id="agenda" class="section">
+                <div class="card">
+                    <div class="card-title">📅 TIMELINE</div>
+                    <div id="agendaContainer"></div>
+                </div>
+            </div>
+
+            <!-- PENDÊNCIAS -->
+            <div id="pendencias" class="section">
+                <div class="card">
+                    <div class="card-title">🔔 ALERTAS DO SISTEMA</div>
+                    <div id="pendenciasContainer"></div>
+                </div>
+            </div>
+            
+            <!-- CADASTRO -->
+            <div id="cadastro" class="section">
+                <div class="card">
+                    <div class="card-title">➕ ADICIONAR TEMA</div>
+                    <form id="cadastroForm">
+                        <div class="form-group">
+                            <label class="form-label">Área de Conhecimento</label>
+                            <input type="text" class="form-input" id="novaArea" placeholder="Ex: Ombro e Cotovelo" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tema Específico</label>
+                            <input type="text" class="form-input" id="novoTema" placeholder="Ex: Sd manguito rotador" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nível de Prioridade</label>
+                            <input type="number" class="form-input" id="novaPrioridade" min="1" max="5" value="3" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Data de Início</label>
+                            <input type="date" class="form-input" id="novaDataInicio">
+                        </div>
+                        <button type="submit" class="btn">✅ ADICIONAR TEMA</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- FEEDBACK -->
+            <div id="feedback" class="section">
+                <div class="card">
+                    <div class="card-title">📝 REGISTRAR PERFORMANCE</div>
+                    <form id="feedbackForm">
+                        <div class="form-group">
+                            <label class="form-label">Módulo Estudado</label>
+                            <select class="form-select" id="feedbackTema" required>
+                                <option value="">Selecione o módulo...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Data da Sessão</label>
+                            <input type="date" class="form-input" id="feedbackData" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Performance (%)</label>
+                            <input type="number" class="form-input" id="feedbackRendimento" min="0" max="100" placeholder="0-100" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Duração (min)</label>
+                            <input type="number" class="form-input" id="feedbackTempo" min="0" placeholder="Minutos" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Diretriz Próxima Sessão</label>
+                            <input type="text" class="form-input" id="feedbackSugestao" placeholder="Ex: Revisar flashcards + questões">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Log da Sessão</label>
+                            <textarea class="form-textarea" id="feedbackObs" placeholder="Ex: Q17/20 em 30min | FC8/10 em 15min"></textarea>
+                        </div>
+                        <button type="submit" class="btn">✅ SALVAR PERFORMANCE</button>
+                    </form>
+                    <button class="btn btn-danger" onclick="desfazerUltimoFeedback()">↩️ DESFAZER ÚLTIMO</button>
+                </div>
+            </div>
+            
+            <!-- ESTATÍSTICAS -->
+            <div id="stats" class="section">
+                <div class="card">
+                    <div class="card-title">📊 ANALYTICS</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="statTemas">0</div>
+                            <div class="stat-label">Módulos Ativos</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statSessoes">0</div>
+                            <div class="stat-label">Sessões Totais</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statRendimento">0%</div>
+                            <div class="stat-label">Performance Média</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statTempo">0h</div>
+                            <div class="stat-label">Tempo Investido</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">📈 VISUALIZAÇÕES</div>
+                    <div style="margin-bottom: 30px;">
+                        <canvas id="chartBarras" width="400" height="200"></canvas>
+                    </div>
+                    <div style="margin-bottom: 30px;">
+                        <canvas id="chartLinha" width="400" height="200"></canvas>
+                    </div>
+                    <div style="margin-bottom: 30px;">
+                        <canvas id="chartRadar" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- HISTÓRICO -->
+            <div id="historico" class="section">
+                <div class="card">
+                    <div class="card-title">📜 REGISTRO COMPLETO</div>
+                    
+                    <div class="edit-date-form">
+                        <div style="margin-bottom: 12px;">
+                            <strong style="color: var(--turquesa-light);">🔧 CORRIGIR DATAS ANTIGAS</strong>
+                        </div>
+                        <div class="edit-date-row">
+                            <select id="editHistoricoId" class="form-select">
+                                <option value="">Selecione sessão sem data...</option>
+                            </select>
+                            <input type="date" id="editHistoricoData" class="form-input">
+                            <button class="btn btn-small" onclick="atualizarDataHistorico()">Salvar</button>
+                        </div>
+                    </div>
+                    
+                    <div style="overflow-x: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Tema</th>
+                                    <th>Área</th>
+                                    <th>Rend.</th>
+                                    <th>Tempo</th>
+                                    <th>Observações</th>
+                                    <th>Sugestão</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historicoTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RELATÓRIOS -->
+            <div id="relatorios" class="section">
+                <div class="card">
+                    <div class="card-title">📊 ANÁLISE POR PERÍODO</div>
+                    <div class="date-range-controls">
+                        <input type="date" class="form-input" id="relatorioDataInicio">
+                        <input type="date" class="form-input" id="relatorioDataFim">
+                        <button class="btn btn-small" onclick="gerarRelatorio()">Gerar</button>
+                    </div>
+                    <div id="relatorioResultado"></div>
+                    <button class="btn btn-secondary" onclick="exportarRelatorioPeriodo()" style="display:none; margin-top: 20px;" id="btnExportarRelatorio">
+                        📥 Exportar Período
+                    </button>
+                </div>
+            </div>
+            
+            <!-- IMPORTAR -->
+            <div id="importar" class="section">
+                <div class="card">
+                    <div class="card-title">📥 IMPORTAR DADOS</div>
+                    <div class="form-group">
+                        <label class="form-label">Arquivo DADOS.csv</label>
+                        <input type="file" class="form-input" id="importDados" accept=".csv">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Arquivo HISTORICO.csv</label>
+                        <input type="file" class="form-input" id="importHistorico" accept=".csv">
+                    </div>
+                    <button class="btn" onclick="importarArquivos()">📥 PROCESSAR IMPORTAÇÃO</button>
+                    <button class="btn btn-danger" onclick="limparTudo()">🗑️ RESET COMPLETO</button>
+                </div>
+            </div>
+            
+            <!-- EXPORTAR -->
+            <div id="exportar" class="section">
+                <div class="card">
+                    <div class="card-title">📤 BACKUP DE DADOS</div>
+                    <button class="btn btn-secondary" onclick="exportarDados()">📊 Baixar DADOS.csv</button>
+                    <button class="btn btn-secondary" onclick="exportarHistorico()" style="margin-top: 12px;">📜 Baixar HISTORICO.csv</button>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Prioridade</label>
-      <input id="cadPrior" type="number" min="1" max="5" value="3" class="form-input" required>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Data inicial (opcional)</label>
-      <input id="cadData" type="date" class="form-input">
-    </div>
-    <div class="form-group"><label class="form-label">&nbsp;</label>
-      <button class="btn" type="submit">✅ Adicionar</button>
-    </div>
-  </form>
-</section>
 
-<section id="feedback" class="card" hidden>
-  <div class="title">📝 Registrar performance</div>
-  <form id="formFeedback" class="row">
-    <div class="row row-2">
-      <div class="form-group">
-        <label class="form-label">Área</label>
-        <select id="fbArea" class="form-select"></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Módulo (Tema)</label>
-        <select id="fbTema" class="form-select"></select>
-      </div>
-    </div>
-    <div class="row row-3">
-      <div class="form-group">
-        <label class="form-label">Data da sessão</label>
-        <input id="fbData" type="date" class="form-input" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Performance (%)</label>
-        <input id="fbRend" type="number" min="0" max="100" class="form-input" placeholder="0-100" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Duração (min)</label>
-        <input id="fbTempo" type="number" min="0" class="form-input" placeholder="Minutos" required>
-      </div>
-    </div>
-    <div class="row row-2">
-      <div class="form-group">
-        <label class="form-label">Diretriz próxima sessão</label>
-        <input id="fbSug" class="form-input" placeholder="Ex: Revisar flashcards + questões">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Log da sessão</label>
-        <textarea id="fbObs" class="form-textarea" placeholder="Ex: Q17/20 em 30min | FC8/10 em 15min"></textarea>
-      </div>
-    </div>
-    <div class="row row-2">
-      <button class="btn" type="submit">✅ Salvar performance</button>
-      <button class="btn secondary" id="btnDesfazer" type="button">↩️ Desfazer último</button>
-    </div>
-  </form>
-</section>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // ==================== DADOS E INICIALIZAÇÃO ====================
+        let dados = JSON.parse(localStorage.getItem('vrvs_dados') || '[]');
+        let historico = JSON.parse(localStorage.getItem('vrvs_historico') || '[]');
+        
+        // Limpar dados corrompidos
+        function limparDadosCorretos() {
+            const dadosOriginais = dados.length;
+            dados = dados.filter(t => {
+                if (!t.area || t.area.match(/^\d{4}-\d{2}-\d{2}/)) return false;
+                if (t.area && t.area.toLowerCase().includes('sugest')) return false;
+                if (!t.tema || t.tema.toLowerCase().includes('revisao ativa') || t.tema.toLowerCase().includes('revisão ativa')) return false;
+                if (t.tema.length > 100) return false;
+                if (t.tema.match(/^\d{4}-\d{2}-\d{2}/)) return false;
+                if (t.tema.includes('Sugestão:') || t.tema.includes('sugestão:')) return false;
+                if ((t.tema.match(/\|/g) || []).length > 2) return false;
+                return true;
+            });
+            
+            if (dados.length < dadosOriginais) {
+                console.log(`🧹 Limpeza: removidos ${dadosOriginais - dados.length} registros corrompidos`);
+                localStorage.setItem('vrvs_dados', JSON.stringify(dados));
+            }
+        }
+        
+        limparDadosCorretos();
+        
+        // ==================== FUNÇÕES AUXILIARES ====================
+        
+        function mostrarNotificacaoFeedback(mensagem, tipo = 'success') {
+            const container = document.getElementById('feedbackMessage');
+            container.innerHTML = `<div class="message ${tipo}">${mensagem}</div>`;
+            setTimeout(() => container.innerHTML = '', 5000);
+        }
+        
+        function extrairUltimaSugestao(observacoes) {
+            if (!observacoes) return '';
+            const linhas = observacoes.split('\n');
+            for (let i = linhas.length - 1; i >= 0; i--) {
+                const linha = linhas[i];
+                if (linha.includes('Sugestão:') || linha.includes('sugestão:')) {
+                    const partes = linha.split(/[Ss]ugestão:/);
+                    if (partes.length > 1) {
+                        return partes[1].trim().replace(/^\|/, '').replace(/\|$/, '').trim();
+                    }
+                }
+            }
+            return '';
+        }
+        
+        function obterSugestaoTema(tema) {
+            if (!tema) return '';
+            if (tema.sugestao && tema.sugestao !== '-' && tema.sugestao.trim() !== '') {
+                return tema.sugestao.trim();
+            }
+            return extrairUltimaSugestao(tema.observacoes);
+        }
 
-<section id="tarefa" class="card" hidden>
-  <div class="title">📋 Missões do dia</div>
-  <div id="tarefasBox"></div>
-</section>
+        function calcularTipoRevisao(tema) {
+            const rend = tema.rendimento || 0;
+            const sess = tema.sessoes || 0;
+            
+            if (sess === 0) return '🆕 Primeira sessão';
+            if (sess === 1) return '⚡ Questões/flashcards';
+            if (rend < 0.50) return '📚 Revisar teoria completa';
+            if (rend < 0.60) return '📹 Aula + questões';
+            if (rend < 0.80) return '📖 Resumo + questões';
+            return '⚡ Questões/flashcards';
+        }
+        
+        function normalizeArea(rawArea, tema) {
+            if (!rawArea && !tema) return '';
+            let area = String(rawArea || '').trim().toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            
+            const areaMap = {
+                'trauma mmss': 'Trauma MMSS',
+                'trauma membros superiores': 'Trauma MMSS',
+                'trauma mmii': 'Trauma MMII',
+                'trauma membros inferiores': 'Trauma MMII',
+                'ombro e cotovelo': 'Ombro e Cotovelo',
+                'ombro': 'Ombro e Cotovelo',
+                'cotovelo': 'Ombro e Cotovelo',
+                'mao': 'Mão',
+                'punho': 'Mão',
+                'joelho': 'Joelho',
+                'quadril': 'Quadril',
+                'pelve': 'Quadril',
+                'pe e tornozelo': 'Pé e Tornozelo',
+                'tornozelo': 'Pé e Tornozelo',
+                'coluna': 'Coluna',
+                'oncologia': 'Oncologia',
+                'tumores': 'Oncologia'
+            };
+            
+            if (areaMap[area]) return areaMap[area];
+            return area.replace(/\b\w/g, m => m.toUpperCase());
+        }
+        
+        function calcularProximaRevisao(tema) {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            
+            if (!tema.sessoes || tema.sessoes === 0) {
+                const proxima = new Date(hoje);
+                proxima.setDate(proxima.getDate() + 1);
+                return proxima.toISOString().split('T')[0];
+            }
+            
+            const rendimento = Math.round((tema.rendimento || 0) * 100);
+            const prioridade = parseInt(tema.prioridade) || 3;
+            const contador80 = parseInt(tema.contador80) || 0;
+            let intervalo = 1;
+            
+            if (rendimento < 50) {
+                intervalo = 1;
+            } else if (rendimento >= 50 && rendimento < 80) {
+                intervalo = 3;
+            } else {
+                if (contador80 === 0) intervalo = 7;
+                else if (contador80 === 1) intervalo = 14;
+                else if (contador80 === 2) intervalo = 30;
+                else intervalo = 60;
+                
+                if (prioridade === 5 && intervalo > 30) {
+                    intervalo = 30;
+                }
+            }
+            
+            const proxima = new Date(hoje);
+            proxima.setDate(proxima.getDate() + intervalo);
+            return proxima.toISOString().split('T')[0];
+        }
 
-<section id="agenda" class="card" hidden>
-  <div class="title">📅 Timeline</div>
-  <div class="row row-3">
-    <div class="form-group">
-      <label class="form-label">Início</label>
-      <input id="agIni" type="date" class="form-input">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Fim</label>
-      <input id="agFim" type="date" class="form-input">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Filtros rápidos</label>
-      <div class="row row-3">
-        <button class="btn small secondary" type="button" data-range="today">Hoje</button>
-        <button class="btn small secondary" type="button" data-range="week">Semana</button>
-        <button class="btn small secondary" type="button" data-range="7d">Próx. 7 dias</button>
-      </div>
-    </div>
-  </div>
-  <hr class="sep">
-  <div id="agendaBox"></div>
-</section>
+        // ==================== MODAL DE EDIÇÃO ====================
+        
+        function openEditModal(id) {
+            const tema = dados.find(t => t.id == id);
+            if (!tema) {
+                mostrarNotificacaoFeedback('⚠️ Tema não encontrado!', 'error');
+                return;
+            }
+            
+            document.getElementById('editId').value = tema.id;
+            document.getElementById('editArea').value = tema.area;
+            document.getElementById('editTema').value = tema.tema;
+            document.getElementById('editPrioridade').value = tema.prioridade || 3;
+            document.getElementById('editStatus').value = tema.status || 'Planejado';
+            
+            document.getElementById('editModal').classList.add('active');
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
 
-<section id="pendencias" class="card" hidden>
-  <div class="title">🔔 Alertas do sistema</div>
-  <div id="pendBox"></div>
-</section>
+        // ==================== RENDERIZAÇÃO DE COMPONENTES ====================
+        
+        function renderPendencias() {
+            const hoje = new Date().toISOString().split('T')[0];
+            const container = document.getElementById('pendenciasContainer');
+            const notificacoes = [];
+            
+            const atrasadas = dados.filter(t => {
+                if (!t.agenda || t.status === 'Concluído') return false;
+                const diasAtraso = Math.floor((new Date(hoje) - new Date(t.agenda)) / (1000 * 60 * 60 * 24));
+                return diasAtraso > 7;
+            });
+            
+            if (atrasadas.length > 0) {
+                notificacoes.push({
+                    tipo: 'urgent',
+                    titulo: `⚠️ ${atrasadas.length} módulos em atraso crítico`,
+                    texto: atrasadas.map(t => `• ${t.tema} (${Math.floor((new Date(hoje) - new Date(t.agenda)) / (1000 * 60 * 60 * 24))} dias)`).join('\n')
+                });
+            }
+            
+            const planejados = dados.filter(t => t.status === 'Planejado' && t.sessoes === 0);
+            if (planejados.length > 0) {
+                notificacoes.push({
+                    tipo: 'normal',
+                    titulo: `📋 ${planejados.length} módulos aguardando inicialização`,
+                    texto: planejados.map(t => `• ${t.tema}`).join('\n')
+                });
+            }
+            
+            const semData = historico.filter(h => !h.data || h.data === '-').length;
+            if (semData > 0) {
+                notificacoes.push({
+                    tipo: 'normal',
+                    titulo: `📅 ${semData} registros sem timestamp`,
+                    texto: 'Acesse Histórico para corrigir datas'
+                });
+            }
+            
+            if (notificacoes.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div><div>Sistema operacional</div></div>';
+                return;
+            }
+            
+            container.innerHTML = notificacoes.map(n => `
+                <div class="notification-item ${n.tipo}">
+                    <div class="notification-title">${n.titulo}</div>
+                    <div class="notification-text" style="white-space: pre-line;">${n.texto}</div>
+                </div>
+            `).join('');
+        }
+        
+        function renderTarefas() {
+            const hoje = new Date().toISOString().split('T')[0];
+            const seteDias = new Date();
+            seteDias.setDate(seteDias.getDate() + 7);
+            const seteDiasStr = seteDias.toISOString().split('T')[0];
+            
+            const tarefas = dados.filter(t => {
+                if (!t.agenda || !t.tema) return false;
+                if (t.status !== 'Em estudo' && t.status !== 'Planejado') return false;
+                return t.agenda >= hoje && t.agenda <= seteDiasStr;
+            });
+            
+            const container = document.getElementById('tarefasContainer');
+            if (tarefas.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div><div>Nenhuma missão pendente</div></div>';
+                return;
+            }
+            
+            tarefas.sort((a, b) => {
+                if (a.agenda !== b.agenda) return a.agenda.localeCompare(b.agenda);
+                return (b.prioridade || 0) - (a.prioridade || 0);
+            });
+            
+            container.innerHTML = tarefas.map(t => {
+                const sugestao = obterSugestaoTema(t);
+                const rendPct = Math.round((t.rendimento || 0) * 100);
+                const rendColor = rendPct >= 80 ? '#00FFE0' : rendPct >= 50 ? '#FFA366' : '#EF4444';
+                const tipo = calcularTipoRevisao(t);
+                const isHoje = t.agenda === hoje;
+                
+                return `
+                <div class="task-item priority-${t.prioridade || 3}">
+                    <div class="task-name">${t.tema} ${isHoje ? '🎯' : ''}</div>
+                    
+                    <div class="task-details">
+                        <div class="task-detail-item">📚 ${t.area}</div>
+                        <div class="task-detail-item">⭐ Prior: ${t.prioridade || 3}</div>
+                        <div class="task-detail-item" style="color: ${rendColor};">📊 ${rendPct}%</div>
+                        <div class="task-detail-item">📢 ${t.sessoes || 0} sessões</div>
+                        <div class="task-detail-item">📅 ${new Date(t.agenda + 'T00:00:00').toLocaleDateString('pt-BR')}</div>
+                    </div>
+                    
+                    ${tipo ? `<div class="task-tipo">${tipo}</div>` : ''}
+                    
+                    ${sugestao ? `
+                    <div class="task-suggestion">
+                        <div class="task-suggestion-label">Diretriz</div>
+                        <div class="task-suggestion-text">${sugestao}</div>
+                    </div>
+                    ` : ''}
+                </div>
+                `;
+            }).join('');
+        }
+        
+        function renderAgenda() {
+            const hoje = new Date().toISOString().split('T')[0];
+            const agendadas = dados
+                .filter(t => t.agenda && t.agenda >= hoje && t.status !== 'Concluído')
+                .sort((a, b) => a.agenda.localeCompare(b.agenda));
+            
+            const container = document.getElementById('agendaContainer');
+            if (agendadas.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><div>Timeline vazia</div></div>';
+                return;
+            }
+            
+            container.innerHTML = agendadas.map(t => {
+                const sugestao = obterSugestaoTema(t);
+                const rendPct = Math.round((t.rendimento || 0) * 100);
+                const rendColor = rendPct >= 80 ? '#00FFE0' : rendPct >= 50 ? '#FFA366' : '#EF4444';
+                const dataFormatada = new Date(t.agenda + 'T00:00:00').toLocaleDateString('pt-BR');
+                const tipo = calcularTipoRevisao(t);
+                
+                return `
+                <div class="task-item priority-${t.prioridade || 3}">
+                    <div class="task-header">
+                        <div class="task-name">${t.tema}</div>
+                        <div class="task-date">📅 ${dataFormatada}</div>
+                    </div>
+                    
+                    <div class="task-details">
+                        <div class="task-detail-item">📚 ${t.area}</div>
+                        <div class="task-detail-item">⭐ Prior: ${t.prioridade || 3}</div>
+                        <div class="task-detail-item" style="color: ${rendColor};">📊 ${rendPct}%</div>
+                        <div class="task-detail-item">📢 ${t.sessoes || 0} sessões</div>
+                    </div>
+                    
+                    ${tipo ? `<div class="task-tipo">${tipo}</div>` : ''}
+                    
+                    ${sugestao ? `
+                    <div class="task-suggestion">
+                        <div class="task-suggestion-label">Diretriz</div>
+                        <div class="task-suggestion-text">${sugestao}</div>
+                    </div>
+                    ` : ''}
+                </div>
+                `;
+            }).join('');
+        }
+        
+        function renderDados() {
+            const tbody = document.getElementById('dadosTableBody');
+            tbody.innerHTML = dados.map(t => {
+                const ultEstudo = t.ultEstudo ? new Date(t.ultEstudo + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+                const agenda = t.agenda ? new Date(t.agenda + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+                const rend = t.rendimento ? Math.round(t.rendimento * 100) + '%' : '-';
+                const rendColor = t.rendimento >= 0.8 ? '#00FFE0' : t.rendimento >= 0.5 ? '#FFA366' : '#EF4444';
+                
+                return `
+                    <tr>
+                        <td style="color: rgba(0,206,209,0.8);">${t.area || '-'}</td>
+                        <td style="color: var(--cobre-light); font-weight: 600;">${t.tema || '-'}</td>
+                        <td style="text-align: center; color: rgba(255,255,255,0.7);">${t.status || 'Não iniciado'}</td>
+                        <td style="text-align: center; color: var(--cobre-main);">${t.prioridade || 3}</td>
+                        <td style="text-align: center; color: ${rendColor};">${rend}</td>
+                        <td style="text-align: center; color: rgba(255,255,255,0.7);">${t.sessoes || 0}</td>
+                        <td style="text-align: center; color: rgba(255,255,255,0.6); font-size: 11px;">${ultEstudo}</td>
+                        <td style="text-align: center; color: rgba(255,255,255,0.6); font-size: 11px;">${agenda}</td>
+                        <td style="text-align: center;">
+                            <button class="btn-edit" onclick="openEditModal(${t.id})">🔧</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function updateFeedbackSelect() {
+            const select = document.getElementById('feedbackTema');
+            select.innerHTML = '<option value="">Selecione o módulo...</option>' +
+                dados.map(t => `<option value="${t.id}">${t.tema} (${t.area})</option>`).join('');
+        }
+        
+        function desfazerUltimoFeedback() {
+            if (historico.length === 0) {
+                mostrarNotificacaoFeedback('⚠️ Nenhum feedback para desfazer!', 'error');
+                return;
+            }
+            
+            if (!confirm('⚠️ Confirma reversão do último registro?')) {
+                return;
+            }
+            
+            const ultimaSessao = historico[historico.length - 1];
+            
+            // CORREÇÃO: Buscar tema comparando IDs como strings
+            const tema = dados.find(t => String(t.id) === String(ultimaSessao.temaId));
+            
+            if (!tema) {
+                mostrarNotificacaoFeedback('⚠️ Módulo não encontrado!', 'error');
+                return;
+            }
+            
+            historico.pop();
+            tema.sessoes = Math.max(0, (tema.sessoes || 1) - 1);
+            tema.tempo = Math.max(0, (tema.tempo || 0) - (ultimaSessao.tempo || 0));
+            
+            const sessoesRestantes = historico.filter(h => String(h.temaId) === String(tema.id));
+            
+            if (sessoesRestantes.length > 0) {
+                const somaRend = sessoesRestantes.reduce((sum, h) => sum + (h.rendimento || 0), 0);
+                tema.rendimento = somaRend / sessoesRestantes.length;
+                
+                // Recalcular contador80
+                let contador = 0;
+                for (let i = sessoesRestantes.length - 1; i >= 0; i--) {
+                    if ((sessoesRestantes[i].rendimento || 0) >= 0.8) {
+                        contador++;
+                    } else {
+                        break;
+                    }
+                }
+                tema.contador80 = contador;
+                
+                // Atualizar última data e agenda
+                const ultimaSessaoRestante = sessoesRestantes[sessoesRestantes.length - 1];
+                tema.ultEstudo = ultimaSessaoRestante ? ultimaSessaoRestante.data : '';
+                tema.agenda = calcularProximaRevisao(tema);
+            } else {
+                tema.rendimento = 0;
+                tema.status = 'Planejado';
+                tema.ultEstudo = '';
+                tema.agenda = '';
+                tema.contador80 = 0;
+            }
+            
+            localStorage.setItem('vrvs_dados', JSON.stringify(dados));
+            localStorage.setItem('vrvs_historico', JSON.stringify(historico));
+            
+            mostrarNotificacaoFeedback('✅ Reversão executada com sucesso!');
+            
+            renderTarefas();
+            renderAgenda();
+            renderDados();
+            renderHistorico();
+            updateStats();
+            renderPendencias();
+        }
 
-<section id="stats" class="card" hidden>
-  <div class="title">📈 Analytics</div>
-  <div class="row row-3">
-    <div class="card"><div class="h2">Módulos ativos</div><div class="h1" id="sTemas">0</div></div>
-    <div class="card"><div class="h2">Sessões</div><div class="h1" id="sSess">0</div></div>
-    <div class="card"><div class="h2">Tempo</div><div class="h1" id="sTempo">0h</div></div>
-  </div>
-  <div class="card"><canvas id="cBarras" height="220"></canvas></div>
-  <div class="card"><canvas id="cLinha"  height="220"></canvas></div>
-  <div class="card"><canvas id="cRadar"  height="300"></canvas></div>
-</section>
+        function atualizarDataHistorico() {
+            const historicoId = document.getElementById('editHistoricoId').value;
+            const novaData = document.getElementById('editHistoricoData').value;
+            
+            if (!historicoId || !novaData) {
+                mostrarNotificacaoFeedback('⚠️ Selecione sessão e data!', 'error');
+                return;
+            }
+            
+            const sessao = historico.find(h => String(h.id) === String(historicoId));
+            if (sessao) {
+                sessao.data = novaData;
+                localStorage.setItem('vrvs_historico', JSON.stringify(historico));
+                
+                document.getElementById('editHistoricoId').value = '';
+                document.getElementById('editHistoricoData').value = '';
+                
+                mostrarNotificacaoFeedback('✅ Data atualizada!');
+                renderHistorico();
+                updateEditHistoricoSelect();
+                renderPendencias();
+            }
+        }
 
-<section id="historico" class="card" hidden>
-  <div class="title">📜 Registro completo</div>
-  <div class="card">
-    <div class="form-label">Corrigir datas antigas</div>
-    <div class="row row-3">
-      <select id="histSemData" class="form-select"></select>
-      <input id="histNovaData" type="date" class="form-input">
-      <button class="btn small" id="btnCorrigirData" type="button">Salvar</button>
-    </div>
-  </div>
-  <div style="overflow-x:auto">
-    <table class="data-table">
-      <thead><tr>
-        <th>Data</th><th>Tema</th><th>Área</th><th>Rend.</th><th>Tempo</th><th>Observações</th><th>Sugestão</th>
-      </tr></thead>
-      <tbody id="histTable"></tbody>
-    </table>
-  </div>
-</section>
+        function updateEditHistoricoSelect() {
+            const select = document.getElementById('editHistoricoId');
+            const sessoesSemData = historico.filter(h => !h.data || h.data === '-');
+            
+            select.innerHTML = '<option value="">Selecione sessão sem data...</option>' +
+                sessoesSemData.map(h => 
+                    `<option value="${h.id}">${h.tema} - ${Math.round((h.rendimento || 0) * 100)}%</option>`
+                ).join('');
+        }
+        
+        function renderHistorico() {
+            const tbody = document.getElementById('historicoTableBody');
+            if (historico.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px; color: rgba(0,206,209,0.5);">Nenhum registro encontrado</td></tr>';
+                updateEditHistoricoSelect();
+                return;
+            }
+            
+            const historicoOrdenado = [...historico].sort((a, b) => {
+                if (!a.data || a.data === '-') return 1;
+                if (!b.data || b.data === '-') return -1;
+                return new Date(b.data) - new Date(a.data);
+            });
+            
+            tbody.innerHTML = historicoOrdenado.map(h => {
+                const data = h.data ? new Date(h.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+                const rend = h.rendimento ? Math.round(h.rendimento * 100) + '%' : '-';
+                const tempo = h.tempo ? h.tempo + ' min' : '-';
+                let rendColor = '#9CA3AF';
+                if (h.rendimento >= 0.8) rendColor = '#00FFE0';
+                else if (h.rendimento >= 0.5) rendColor = '#FFA366';
+                else if (h.rendimento > 0) rendColor = '#EF4444';
+                
+                return `
+                    <tr>
+                        <td style="color: ${!h.data || h.data === '-' ? '#EF4444' : 'rgba(0,206,209,0.6)'}; font-size: 11px;">${data}</td>
+                        <td style="color: var(--cobre-light); font-weight: 600;">${h.tema || '-'}</td>
+                        <td style="color: rgba(0,206,209,0.8);">${h.area || '-'}</td>
+                        <td style="text-align: center; color: ${rendColor}; font-weight: 600;">${rend}</td>
+                        <td style="text-align: center; color: rgba(255,255,255,0.7);">${tempo}</td>
+                        <td style="color: rgba(255,255,255,0.7); font-size: 12px;">${h.observacoes || '-'}</td>
+                        <td style="color: rgba(255,255,255,0.7); font-size: 12px;">${h.sugestao || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+            
+            updateEditHistoricoSelect();
+        }
 
-<section id="relatorios" class="card" hidden>
-  <div class="title">📊 Análise por período</div>
-  <div class="row row-3">
-    <input id="rIni" type="date" class="form-input">
-    <input id="rFim" type="date" class="form-input">
-    <button id="btnRel" class="btn small" type="button">Gerar</button>
-  </div>
-  <div id="relBox" style="margin-top:12px"></div>
-  <button id="btnRelExp" class="btn secondary" style="margin-top:12px" type="button" hidden>📥 Exportar período</button>
-</section>
+        function gerarRelatorio() {
+            const dataInicio = document.getElementById('relatorioDataInicio').value;
+            const dataFim = document.getElementById('relatorioDataFim').value;
+            
+            if (!dataInicio || !dataFim) {
+                mostrarNotificacaoFeedback('⚠️ Defina período completo!', 'error');
+                return;
+            }
+            
+            const sessoesNoPeriodo = historico.filter(h => {
+                if (!h.data || h.data === '-') return false;
+                return h.data >= dataInicio && h.data <= dataFim;
+            });
+            
+            if (sessoesNoPeriodo.length === 0) {
+                document.getElementById('relatorioResultado').innerHTML = 
+                    '<div class="empty-state"><div class="empty-icon">📊</div><div>Sem dados no período</div></div>';
+                document.getElementById('btnExportarRelatorio').style.display = 'none';
+                return;
+            }
+            
+            const totalSessoes = sessoesNoPeriodo.length;
+            const totalTempo = sessoesNoPeriodo.reduce((sum, h) => sum + (h.tempo || 0), 0);
+            const rendimentoMedio = Math.round((sessoesNoPeriodo.reduce((sum, h) => sum + (h.rendimento || 0), 0) / totalSessoes) * 100);
+            
+            const porArea = {};
+            sessoesNoPeriodo.forEach(h => {
+                const area = h.area || 'Sem área';
+                if (!porArea[area]) {
+                    porArea[area] = { sessoes: 0, tempo: 0, rendimento: 0 };
+                }
+                porArea[area].sessoes++;
+                porArea[area].tempo += h.tempo || 0;
+                porArea[area].rendimento += h.rendimento || 0;
+            });
+            
+            const resultado = `
+                <div style="margin-top: 20px;">
+                    <h4 style="color: var(--turquesa-light); margin-bottom: 12px;">
+                        Análise: ${new Date(dataInicio).toLocaleDateString('pt-BR')} - ${new Date(dataFim).toLocaleDateString('pt-BR')}
+                    </h4>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">${totalSessoes}</div>
+                            <div class="stat-label">Sessões</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${Math.round(totalTempo / 60)}h</div>
+                            <div class="stat-label">Tempo Total</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${rendimentoMedio}%</div>
+                            <div class="stat-label">Performance</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${Object.keys(porArea).length}</div>
+                            <div class="stat-label">Áreas</div>
+                        </div>
+                    </div>
+                    <h5 style="color: var(--turquesa-light); margin: 20px 0 12px;">Detalhamento por Área:</h5>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Área</th>
+                                <th>Sessões</th>
+                                <th>Tempo</th>
+                                <th>Rendimento</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.entries(porArea).map(([area, stats]) => `
+                                <tr>
+                                    <td style="color: var(--turquesa-light);">${area}</td>
+                                    <td style="text-align: center;">${stats.sessoes}</td>
+                                    <td style="text-align: center;">${stats.tempo} min</td>
+                                    <td style="text-align: center;">${Math.round(stats.rendimento / stats.sessoes * 100)}%</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('relatorioResultado').innerHTML = resultado;
+            document.getElementById('btnExportarRelatorio').style.display = 'block';
+            
+            localStorage.setItem('relatorioPeriodo', JSON.stringify({ dataInicio, dataFim }));
+        }
 
-<section id="importar" class="card" hidden>
-  <div class="title">📥 Importar dados</div>
-  <div class="form-group"><label class="form-label">DADOS.csv</label><input id="inDados" type="file" accept=".csv" class="form-input"></div>
-  <div class="form-group"><label class="form-label">HISTORICO.csv</label><input id="inHist" type="file" accept=".csv" class="form-input"></div>
-  <div class="row row-2">
-    <button class="btn" id="btnProcessar" type="button">📥 Processar importação</button>
-    <button class="btn secondary" id="btnReset" type="button">🗑️ Reset completo</button>
-  </div>
-</section>
-
-<section id="exportar" class="card" hidden>
-  <div class="title">📤 Backup</div>
-  <div class="row row-2">
-    <button class="btn secondary" id="btnExpDados" type="button">📊 Baixar DADOS.csv</button>
-    <button class="btn secondary" id="btnExpHist"  type="button">📜 Baixar HISTORICO.csv</button>
-  </div>
-</section>
-
-<div id="toast" class="message" style="display:none"></div>
-</main>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-/* ========================= VRVS CORE – v5.1.1 ========================= */
-let dados = JSON.parse(localStorage.getItem('vrvs_dados') || '[]');
-let historico = JSON.parse(localStorage.getItem('vrvs_historico') || '[]');
-
-function save(){ localStorage.setItem('vrvs_dados', JSON.stringify(dados));
-                 localStorage.setItem('vrvs_historico', JSON.stringify(historico)); }
-
-function toast(msg, ok=true){ const el = document.getElementById('toast');
-  el.className = 'message'+(ok?'':' error'); el.innerHTML = msg; el.style.display='block';
-  clearTimeout(el._t); el._t = setTimeout(()=>el.style.display='none',4200);
-}
-
-/* ====== Normalização / Util ====== */
-function normalizeArea(raw){
-  let a = String(raw||'').trim().toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-  const map = {
-    'trauma mmss':'Trauma MMSS','trauma membros superiores':'Trauma MMSS',
-    'trauma mmii':'Trauma MMII','trauma membros inferiores':'Trauma MMII',
-    'ombro':'Ombro e Cotovelo','cotovelo':'Ombro e Cotovelo','ombro e cotovelo':'Ombro e Cotovelo',
-    'mao':'Mão','punho':'Mão','pe e tornozelo':'Pé e Tornozelo','tornozelo':'Pé e Tornozelo',
-    'quadril':'Quadril','pelve':'Quadril','coluna':'Coluna',
-    'oncologia':'Oncologia','tumores':'Oncologia','trauma':'Trauma'
-  };
-  return map[a] || a.replace(/\b\w/g,m=>m.toUpperCase());
-}
-function extrairUltimaSugestao(obs){
-  if(!obs) return '';
-  const linhas = String(obs).split('\n');
-  for(let i=linhas.length-1;i>=0;i--){
-    const m = linhas[i].match(/[Ss]ugest(ão|ao)\s*:\s*(.*)$/);
-    if(m) return m[2].trim();
-  }
-  return '';
-}
-function tipoRevisao(t){
-  const r = Math.round((t.rendimento||0)*100), s = t.sessoes||0;
-  if(s===0) return '🆕 Primeira sessão';
-  if(s===1) return '⚡ Questões/flashcards';
-  if(r<50) return '📚 Revisar teoria completa';
-  if(r<60) return '📹 Aula + questões';
-  if(r<80) return '📖 Resumo + questões';
-  return '⚡ Questões/flashcards';
-}
-
-/* ====== Spaced Repetition ====== */
-const _origCalc = function(tema){
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
-  if(!tema.sessoes || tema.sessoes===0){ const p = new Date(hoje); p.setDate(p.getDate()+1); return p.toISOString().split('T')[0];}
-  const r = Math.round((tema.rendimento||0)*100);
-  const pr = parseInt(tema.prioridade)||3;
-  let int=1;
-  if(r<50) int=1; else if(r<80) int=3; else {
-    const c = parseInt(tema.contador80)||0;
-    int = [7,14,30,60,90][Math.min(c,4)];
-    if(pr===5 && int>30) int=30;
-  }
-  const p = new Date(hoje); p.setDate(p.getDate()+int);
-  return p.toISOString().split('T')[0];
-};
-function calcularProximaRevisao(t){ // 2ª sessão = amanhã
-  if(Number(t.sessoes)===1){ const d=new Date(); d.setDate(d.getDate()+1); return d.toISOString().split('T')[0]; }
-  return _origCalc(t);
-}
-
-/* ====== Cores determinísticas por Área ====== */
-const _areaColor = {};
-function colorFor(area){
-  const key = String(area||'').toLowerCase().trim();
-  if(_areaColor[key]) return _areaColor[key];
-  let h=0; for(let i=0;i<key.length;i++) h=(h*31+key.charCodeAt(i))>>>0;
-  const hue = h%360, sat=66, lig=52;
-  return _areaColor[key] = `hsl(${hue} ${sat}% ${lig}%)`;
-}
-
-/* ====== Fix antigo de Área↔Tema (sem quebrar) ====== */
-function fixAreaTema(o){
-  if(!o || typeof o!=='object') return o;
-  const a = String(o.area||'').trim().toLowerCase();
-  const t = String(o.tema||'').trim().toLowerCase();
-  if(a==='área' || a==='area') return null;
-  if(t==='tema') return null;
-  const areas = ['ombro','cotovelo','ombro e cotovelo','joelho','quadril','mão','mao','punho','tornozelo','pé','pe','coluna','oncologia','trauma','pediátrico','pediatrico','infecção','infeccao','medicina esportiva'];
-  const areaLonga = a.length>28;
-  const temaTemArea = areas.some(k=>t.includes(k));
-  if(areaLonga && temaTemArea){ const tmp=o.area; o.area=o.tema; o.tema=tmp; }
-  return o;
-}
-
-/* ====== Dados iniciais (normalização + limpeza leve) ====== */
-function sanitizeAll(){
-  dados = (Array.isArray(dados)?dados:[]).map(fixAreaTema).filter(Boolean).map(t=>{
-    t.area = normalizeArea(t.area);
-    t.prioridade = parseInt(t.prioridade)||3;
-    t.sessoes = parseInt(t.sessoes)||0;
-    t.tempo = parseInt(t.tempo)||0;
-    t.contador80 = parseInt(t.contador80)||0;
-    t.rendimento = (t.rendimento>1)?(t.rendimento/100):(+t.rendimento||0);
-    if(!t.id) t.id = Date.now()+Math.random();
-    if(!t.sugestao || t.sugestao==='-') t.sugestao = extrairUltimaSugestao(t.observacoes);
-    return t;
-  });
-  historico = (Array.isArray(historico)?historico:[]).map(fixAreaTema).filter(Boolean).map(h=>{
-    h.area = normalizeArea(h.area);
-    h.tempo = parseInt(h.tempo)||0;
-    h.rendimento = (h.rendimento>1)?(h.rendimento/100):(+h.rendimento||0);
-    if(!h.id) h.id = Date.now()+Math.random();
-    if(!h.data || h.data==='-'){
-      const m = (h.observacoes||'').match(/^(\d{4}-\d{2}-\d{2}):/); if(m) h.data = m[1];
-    }
-    if(!h.sugestao || h.sugestao==='-') h.sugestao = extrairUltimaSugestao(h.observacoes);
-    return h;
-  });
-  save();
-}
-sanitizeAll();
-
-/* ========================= UI / Navegação ========================= */
-const sections = Array.from(document.querySelectorAll('main > section'));
-document.getElementById('tabs').addEventListener('click',e=>{
-  if(!e.target.matches('.tab')) return;
-  const id = e.target.dataset.target;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t===e.target));
-  sections.forEach(s=>s.hidden = (s.id!==id));
-  // render on demand
-  if(id==='dados') renderDados();
-  if(id==='tarefa') renderTarefas();
-  if(id==='agenda') { initAgendaFilters(); renderAgenda(); }
-  if(id==='pendencias') renderPendencias();
-  if(id==='stats') renderStats();
-  if(id==='historico') renderHistorico();
-});
-
-/* ========================= Render – Dados ========================= */
-function renderDados(){
-  const tb = document.getElementById('dadosTable');
-  if(!dados.length){ tb.innerHTML = `<tr><td colspan="9"><div class="empty">Sem dados</div></td></tr>`; return; }
-  tb.innerHTML = dados.map(t=>{
-    const rend = t.rendimento?Math.round(t.rendimento*100)+'%':'-';
-    const rendColor = t.rendimento>=.8? 'style="color:'+colorFor(t.area)+'"' :
-                       t.rendimento>=.5? 'style="color:#ffa366"':'style="color:#ef4444"';
-    const ue = t.ultEstudo? new Date(t.ultEstudo+'T00:00:00').toLocaleDateString('pt-BR'):'-';
-    const ag = t.agenda? new Date(t.agenda+'T00:00:00').toLocaleDateString('pt-BR'):'-';
-    return `<tr>
-      <td style="color:${colorFor(t.area)}">${t.area||'-'}</td>
-      <td style="font-weight:700;color:#ffa366">${t.tema||'-'}</td>
-      <td>${t.status||'Não iniciado'}</td>
-      <td style="text-align:center">${t.prioridade||3}</td>
-      <td ${rendColor} style="text-align:center">${rend}</td>
-      <td style="text-align:center">${t.sessoes||0}</td>
-      <td style="text-align:center">${ue}</td>
-      <td style="text-align:center">${ag}</td>
-      <td style="text-align:center"><button class="btn small secondary" onclick="openEdit(${t.id})">✏️</button></td>
-    </tr>`;
-  }).join('');
-}
-window.openEdit = function(id){
-  const t = dados.find(x=>String(x.id)===String(id)); if(!t) return;
-  const novo = prompt('Editar: Área | Tema | Prioridade | Status', `${t.area}|${t.tema}|${t.prioridade}|${t.status||'Planejado'}`);
-  if(!novo) return;
-  const [a,tem,p,s] = novo.split('|').map(v=>String(v||'').trim());
-  t.area = normalizeArea(a||t.area); t.tema = tem||t.tema; t.prioridade=parseInt(p)||t.prioridade; t.status=s||t.status;
-  if(t.sessoes>0) t.agenda = calcularProximaRevisao(t);
-  save(); renderDados(); renderPendencias(); updateFeedbackSelects();
-};
-
-/* ========================= Render – Tarefa (corrigido) ========================= */
-function renderTarefas(){
-  const box = document.getElementById('tarefasBox');
-  const hoje = new Date().toISOString().split('T')[0];
-  const tarefas = dados.filter(t=>{
-    // Mostrar se já tem agenda vencida/hoje ou planejado sem agenda mas com prioridade alta
-    if(t.status!=='Planejado' && t.status!=='Em estudo') return false;
-    if(t.agenda) return t.agenda<=hoje;
-    return (t.sessoes===0 && (t.prioridade||0)>=3); // primeira sessão pendente
-  }).sort((a,b)=>{
-    if(a.agenda!==b.agenda) return String(a.agenda||'9999').localeCompare(String(b.agenda||'9999'));
-    return (b.prioridade||0)-(a.prioridade||0);
-  });
-
-  if(!tarefas.length){ box.innerHTML = `<div class="empty">Nenhuma missão pendente</div>`; return; }
-
-  box.innerHTML = tarefas.map(t=>{
-    const r = Math.round((t.rendimento||0)*100);
-    const cor = r>=80? colorFor(t.area) : (r>=50? '#ffa366' : '#ef4444');
-    const sug = (t.sugestao && t.sugestao!=='-')? t.sugestao : extrairUltimaSugestao(t.observacoes);
-    const isHoje = t.agenda===hoje;
-    return `<div class="card" style="border-color:${colorFor(t.area)}">
-      <div class="row row-3">
-        <div><div class="h2">Tema</div><div class="h1" style="font-size:16px">${t.tema} ${isHoje?'🎯':''}</div></div>
-        <div><div class="h2">Área</div><span class="badge" style="border-color:${colorFor(t.area)};color:${colorFor(t.area)}">${t.area}</span></div>
-        <div><div class="h2">Quando</div>${t.agenda? new Date(t.agenda+'T00:00:00').toLocaleDateString('pt-BR'):'—'}</div>
-      </div>
-      <div class="row row-3" style="margin-top:8px">
-        <div class="badge">⭐ Pri: ${t.prioridade||3}</div>
-        <div class="badge" style="color:${cor}">📊 ${r||0}%</div>
-        <div class="badge">📢 ${t.sessoes||0} sessões</div>
-      </div>
-      <hr class="sep">
-      <div class="badge">${tipoRevisao(t)}</div>
-      ${sug? `<div style="margin-top:8px"><span class="form-label" style="display:inline">Diretriz</span> ${sug}</div>`:''}
-    </div>`;
-  }).join('');
-}
-
-/* ========================= Render – Agenda + filtros ========================= */
-let agIni='', agFim='';
-function initAgendaFilters(){
-  const i = document.getElementById('agIni'), f = document.getElementById('agFim');
-  if(!i.value && !f.value){
-    const d=new Date(), w=d.getDay()||7, ini=new Date(d); ini.setDate(d.getDate()-(w-1));
-    const fim=new Date(ini); fim.setDate(ini.getDate()+6);
-    i.value = ini.toISOString().split('T')[0];
-    f.value = fim.toISOString().split('T')[0];
-    agIni=i.value; agFim=f.value;
-  }
-  document.querySelectorAll('[data-range]').forEach(btn=>{
-    btn.onclick=()=>{
-      const d=new Date(); d.setHours(0,0,0,0);
-      if(btn.dataset.range==='today'){
-        i.value=f.value=d.toISOString().split('T')[0];
-      }else if(btn.dataset.range==='7d'){
-        const e=new Date(d); e.setDate(d.getDate()+7);
-        i.value=d.toISOString().split('T')[0]; f.value=e.toISOString().split('T')[0];
-      }else{ // week
-        const w=d.getDay()||7, ini=new Date(d); ini.setDate(d.getDate()-(w-1));
-        const e=new Date(ini); e.setDate(ini.getDate()+6);
-        i.value=ini.toISOString().split('T')[0]; f.value=e.toISOString().split('T')[0];
-      }
-      agIni=i.value; agFim=f.value; renderAgenda();
-    }
-  });
-  i.onchange=()=>{agIni=i.value; renderAgenda();}
-  f.onchange=()=>{agFim=f.value; renderAgenda();}
-}
-function renderAgenda(){
-  const box=document.getElementById('agendaBox');
-  let lista = dados.filter(t=> t.agenda && (!agIni || t.agenda>=agIni) && (!agFim || t.agenda<=agFim) && t.status!=='Concluído')
-                   .sort((a,b)=>a.agenda.localeCompare(b.agenda));
-  if(!lista.length){ box.innerHTML = `<div class="empty">Timeline vazia</div>`; return; }
-  box.innerHTML = lista.map(t=>{
-    const r = Math.round((t.rendimento||0)*100);
-    return `<div class="card" style="border-color:${colorFor(t.area)}">
-      <div class="row row-3">
-        <div><div class="h2">Data</div>${new Date(t.agenda+'T00:00:00').toLocaleDateString('pt-BR')}</div>
-        <div><div class="h2">Tema</div><b style="color:#ffa366">${t.tema}</b></div>
-        <div><div class="h2">Área</div><span class="badge" style="border-color:${colorFor(t.area)};color:${colorFor(t.area)}">${t.area}</span></div>
-      </div>
-      <div class="row row-3" style="margin-top:6px">
-        <div class="badge">⭐ Pri: ${t.prioridade||3}</div>
-        <div class="badge">📢 ${t.sessoes||0} sessões</div>
-        <div class="badge" style="color:${r>=80?colorFor(t.area):(r>=50?'#ffa366':'#ef4444')}">📊 ${r||0}%</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-/* ========================= Render – Pendências ========================= */
-function renderPendencias(){
-  const box=document.getElementById('pendBox'), hoje=new Date().toISOString().split('T')[0];
-  const atras = dados.filter(t=> t.agenda && t.agenda<hoje && t.status!=='Concluído');
-  const planos = dados.filter(t=> t.status==='Planejado' && t.sessoes===0);
-  const sData = historico.filter(h=>!h.data || h.data==='-');
-  const itens=[];
-  if(atras.length) itens.push({tipo:'urgent',t:`⚠️ ${atras.length} módulos em atraso`,d:atras.map(x=>`• ${x.tema} (${x.agenda})`).join('<br>')});
-  if(planos.length) itens.push({tipo:'',t:`📋 ${planos.length} aguardando 1ª sessão`,d:planos.map(x=>`• ${x.tema}`).join('<br>')});
-  if(sData.length) itens.push({tipo:'',t:`📅 ${sData.length} registros sem data`,d:'Use o seletor em Histórico'});
-  if(!itens.length){ box.innerHTML=`<div class="empty">Sistema operacional</div>`; return; }
-  box.innerHTML = itens.map(n=>`<div class="card" style="border-color:${n.tipo==='urgent'?'#ff7f50': 'rgba(0,206,209,.35)'}">
-    <div class="h1" style="font-size:16px">${n.t}</div><div style="margin-top:6px">${n.d}</div></div>`).join('');
-}
-
-/* ========================= Feedback (Área + Tema) ========================= */
-function areasUnicas(){ return Array.from(new Set(dados.map(d=>d.area))).sort((a,b)=>a.localeCompare(b,'pt-BR')); }
-function updateFeedbackSelects(){
-  const sA = document.getElementById('fbArea'), sT = document.getElementById('fbTema');
-  const as = areasUnicas();
-  sA.innerHTML = `<option value="">Selecione a área...</option>` + as.map(a=>`<option>${a}</option>`).join('');
-  const cur = sA.value;
-  const base = dados.filter(t=> !cur || t.area===cur);
-  sT.innerHTML = `<option value="">Selecione o módulo...</option>` + base.map(t=>`<option value="${t.id}">${t.tema} (${t.area})</option>`).join('');
-}
-document.getElementById('fbArea').onchange = updateFeedbackSelects;
-
-document.getElementById('formFeedback').onsubmit = e=>{
-  e.preventDefault();
-  const temaId = document.getElementById('fbTema').value;
-  const data = document.getElementById('fbData').value;
-  const rend = parseInt(document.getElementById('fbRend').value)||0;
-  const tempo = parseInt(document.getElementById('fbTempo').value)||0;
-  const sug = document.getElementById('fbSug').value.trim();
-  const obs = document.getElementById('fbObs').value.trim();
-
-  const t = dados.find(x=>String(x.id)===String(temaId));
-  if(!t){ toast('⚠️ Selecione um módulo válido', false); return; }
-
-  // contador80
-  if(rend>=80) t.contador80 = (t.contador80||0)+1; else t.contador80 = 0;
-
-  t.rendimento = rend/100; t.sessoes=(t.sessoes||0)+1; t.ultEstudo=data; t.tempo=(t.tempo||0)+tempo;
-  t.status = t.sessoes===1 ? 'Em estudo' : t.status;
-  t.agenda = calcularProximaRevisao(t);
-
-  let novaObs = obs? `${data}: ${obs}` : '';
-  if(sug) novaObs += (novaObs?' | ':'')+`Sugestão: ${sug}`;
-  if(novaObs) t.observacoes = t.observacoes? (t.observacoes+'\n'+novaObs) : novaObs;
-  t.sugestao = sug||t.sugestao||'';
-
-  historico.push({id:Date.now(), temaId:t.id, area:t.area, tema:t.tema, rendimento:t.rendimento, tempo, data, observacoes:obs||'-', sugestao:sug||'-'});
-  save();
-
-  // reset + próxima data
-  document.getElementById('formFeedback').reset();
-  document.getElementById('fbData').value = new Date().toISOString().split('T')[0];
-
-  toast(`✅ Performance registrada! 📅 Próxima: ${new Date(t.agenda+'T00:00:00').toLocaleDateString('pt-BR')}`);
-  renderTarefas(); renderAgenda(); renderDados(); renderHistorico(); renderPendencias(); renderStats(); updateFeedbackSelects();
-};
-document.getElementById('btnDesfazer').onclick = ()=>{
-  if(!historico.length){ toast('Nada para desfazer', false); return; }
-  if(!confirm('Desfazer o último registro?')) return;
-  const h = historico.pop();
-  const t = dados.find(x=>String(x.id)===String(h.temaId));
-  if(t){
-    t.sessoes = Math.max(0,(t.sessoes||1)-1);
-    t.tempo = Math.max(0,(t.tempo||0)-(h.tempo||0));
-    const rest = historico.filter(x=>String(x.temaId)===String(t.id));
-    if(rest.length){
-      const soma = rest.reduce((s,x)=>s+(x.rendimento||0),0); t.rendimento = soma/rest.length;
-      let c=0; for(let i=rest.length-1;i>=0;i--){ if((rest[i].rendimento||0)>=.8) c++; else break; } t.contador80=c;
-      const u = rest[rest.length-1]; t.ultEstudo=u?u.data:''; t.agenda=calcularProximaRevisao(t);
-    }else{
-      t.rendimento=0; t.status='Planejado'; t.ultEstudo=''; t.agenda=''; t.contador80=0;
-    }
-  }
-  save(); toast('✅ Último feedback desfeito'); renderTarefas(); renderAgenda(); renderDados(); renderHistorico(); renderPendencias(); renderStats(); updateFeedbackSelects();
-};
-
-/* ========================= Histórico ========================= */
-function renderHistorico(){
-  const tb=document.getElementById('histTable');
-  if(!historico.length){ tb.innerHTML=`<tr><td colspan="7"><div class="empty">Sem registros</div></td></tr>`; updateHistSemData(); return; }
-  const ord=[...historico].sort((a,b)=>{
-    if(!a.data || a.data==='-') return 1;
-    if(!b.data || b.data==='-') return -1;
-    return new Date(b.data)-new Date(a.data);
-  });
-  tb.innerHTML = ord.map(h=>{
-    const d = h.data ? new Date(h.data+'T00:00:00').toLocaleDateString('pt-BR'):'-';
-    const r = h.rendimento?Math.round(h.rendimento*100)+'%':'-';
-    let cor = '#9ca3af'; if(h.rendimento>=.8) cor=colorFor(h.area); else if(h.rendimento>=.5) cor='#ffa366'; else if(h.rendimento>0) cor='#ef4444';
-    return `<tr>
-      <td style="color:${(!h.data||h.data==='-')?'#ef4444':'#9ac2c9'}">${d}</td>
-      <td style="color:#ffa366;font-weight:700">${h.tema||'-'}</td>
-      <td style="color:${colorFor(h.area)}">${h.area||'-'}</td>
-      <td style="text-align:center;color:${cor};font-weight:700">${r}</td>
-      <td style="text-align:center">${h.tempo? h.tempo+' min':'-'}</td>
-      <td>${h.observacoes||'-'}</td>
-      <td>${h.sugestao||'-'}</td>
-    </tr>`;
-  }).join('');
-  updateHistSemData();
-}
-function updateHistSemData(){
-  const sel=document.getElementById('histSemData');
-  const lista=historico.filter(h=>!h.data || h.data==='-');
-  sel.innerHTML = `<option value="">Selecione sessão sem data...</option>` + lista.map(h=>`<option value="${h.id}">${h.tema} (${Math.round((h.rendimento||0)*100)}%)</option>`).join('');
-}
-document.getElementById('btnCorrigirData').onclick=()=>{
-  const id=document.getElementById('histSemData').value, d=document.getElementById('histNovaData').value;
-  if(!id||!d){ toast('Selecione sessão e data',false); return; }
-  const h=historico.find(x=>String(x.id)===String(id)); if(!h) return;
-  h.data=d; save(); toast('✅ Data atualizada'); document.getElementById('histSemData').value=''; document.getElementById('histNovaData').value=''; renderHistorico(); renderPendencias();
-};
-
-/* ========================= Estatísticas + Gráficos ========================= */
-let gBar=null,gLin=null,gRad=null;
-function renderStats(){
-  document.getElementById('sTemas').textContent = dados.length;
-  document.getElementById('sSess').textContent  = historico.length;
-  const min = historico.reduce((s,h)=>s+(h.tempo||0),0); document.getElementById('sTempo').textContent = Math.round(min/60)+'h';
-  if(!window.Chart){ console.warn('Chart.js offline'); return; }
-
-  // Barras: média por área
-  const porArea = {};
-  historico.forEach(h=>{ if(!h.area||!h.rendimento) return; const a=h.area; (porArea[a]||(porArea[a]={sum:0,c:0})); porArea[a].sum+=h.rendimento*100; porArea[a].c++; });
-  const labels=Object.keys(porArea), media=labels.map(a=>Math.round(porArea[a].sum/porArea[a].c)), cores=labels.map(colorFor);
-  if(gBar) gBar.destroy();
-  gBar = new Chart(document.getElementById('cBarras'), {type:'bar', data:{labels,datasets:[{data:media,backgroundColor:cores,borderColor:cores}]}, options:{responsive:true,plugins:{legend:{display:false}}} });
-
-  // Linha: evolução por área (sessão vs rendimento)
-  const evo={}; historico.forEach(h=>{ if(!h.area) return; (evo[h.area]||(evo[h.area]=[])).push(h); });
-  const ds = Object.entries(evo).map(([a,arr])=>{
-    const sorted = arr.map((x,i)=>({x:i+1,y:Math.round((x.rendimento||0)*100)}));
-    const c=colorFor(a); return {label:a,data:sorted,borderColor:c,backgroundColor:c+'33',tension:.3};
-  });
-  if(gLin) gLin.destroy(); gLin=new Chart(document.getElementById('cLinha'),{type:'line',data:{datasets:ds},options:{responsive:true,plugins:{legend:{position:'bottom'}}}});
-
-  // Radar: média por área
-  if(gRad) gRad.destroy(); gRad=new Chart(document.getElementById('cRadar'),{type:'radar',data:{labels,datasets:[{data:media,borderColor:'#00ffe0',backgroundColor:'rgba(0,255,224,.2)'}]},options:{responsive:true,plugins:{legend:{display:false}}}});
-}
-
-/* ========================= Relatórios ========================= */
-let ultimoPeriodo=null;
-document.getElementById('btnRel').onclick=()=>{
-  const ini=document.getElementById('rIni').value, fim=document.getElementById('rFim').value;
-  if(!ini||!fim){ toast('Defina período completo',false); return; }
-  const lista = historico.filter(h=>h.data && h.data>=ini && h.data<=fim);
-  const box=document.getElementById('relBox');
-  if(!lista.length){ box.innerHTML=`<div class="empty">Sem dados no período</div>`; document.getElementById('btnRelExp').hidden=true; return; }
-  const sess=lista.length, tempo=lista.reduce((s,h)=>s+(h.tempo||0),0), rend=Math.round(lista.reduce((s,h)=>s+(h.rendimento||0),0)/sess*100);
-  const porArea={}; lista.forEach(h=>{const a=h.area||'Sem área'; (porArea[a]||(porArea[a]={c:0,t:0,r:0})); porArea[a].c++; porArea[a].t+=h.tempo||0; porArea[a].r+=h.rendimento||0;});
-  box.innerHTML = `<div class="row row-3">
-    <div class="card"><div class="h2">Sessões</div><div class="h1">${sess}</div></div>
-    <div class="card"><div class="h2">Tempo</div><div class="h1">${Math.round(tempo/60)}h</div></div>
-    <div class="card"><div class="h2">Performance</div><div class="h1">${rend}%</div></div>
-  </div>
-  <div class="card"><div class="title">Detalhamento por área</div>
-    <table class="data-table"><thead><tr><th>Área</th><th>Sessões</th><th>Tempo</th><th>Rendimento</th></tr></thead>
-    <tbody>${
-      Object.entries(porArea).map(([a,v])=>`<tr>
-        <td style="color:${colorFor(a)}">${a}</td>
-        <td style="text-align:center">${v.c}</td>
-        <td style="text-align:center">${v.t} min</td>
-        <td style="text-align:center">${Math.round(v.r/v.c*100)}%</td>
-      </tr>`).join('')
-    }</tbody></table>
-  </div>`;
-  ultimoPeriodo={ini,fim,lista}; document.getElementById('btnRelExp').hidden=false;
-};
-document.getElementById('btnRelExp').onclick=()=>{
-  if(!ultimoPeriodo){ toast('Gere o relatório primeiro',false); return; }
-  const csv = toCSV(ultimoPeriodo.lista); downloadCSV(csv, `VRVS_RELATORIO_${ultimoPeriodo.ini}_${ultimoPeriodo.fim}.csv`);
-};
-
-/* ========================= Import / Export ========================= */
-document.getElementById('btnReset').onclick=()=>{
-  if(!confirm('Apagar TODOS os dados?')) return;
-  if(!confirm('Confirma?')) return;
-  dados=[]; historico=[]; save(); toast('🗑️ Reset completo'); renderDados(); renderHistorico(); renderTarefas(); renderAgenda(); renderPendencias(); renderStats(); updateFeedbackSelects();
-};
-document.getElementById('btnProcessar').onclick=async()=>{
-  const fD=document.getElementById('inDados').files[0], fH=document.getElementById('inHist').files[0];
-  if(!fD && !fH){ toast('Selecione arquivo',false); return; }
-  try{
-    if(fD){
-      const arr = await parseCSVFile(fD);
-      dados = arr.map(r=>{
-        const t={
-          id: r.id || (Date.now()+Math.random()),
-          area: normalizeArea(r.area||r.topico),
-          tema: r.tema||r.assunto||r.titulo,
-          status: r.status||'Não iniciado',
-          prioridade: parseInt(r.prioridade||r.prior)||3,
-          dificuldade: r.dificuldade||'Média',
-          rendimento: (r.rendimento? (String(r.rendimento).includes('%')? parseFloat(String(r.rendimento).replace('%','').replace(',','.'))/100 : (+r.rendimento>1? +r.rendimento/100 : +r.rendimento)) : 0),
-          sessoes: parseInt(r.sessoes||r.sessao)||0,
-          ultEstudo: r.ultestudo||r.ultimoestudo||r.ultimo_estudo||'',
-          agenda: r.dataagenda||r.agenda||r.data_agenda||'',
-          tempo: parseInt(r.tempomin||r.tempo)||0,
-          observacoes: r.observacoes||r.obs||r.observacao||'',
-          contador80: parseInt(r.contador80)||0,
-          sugestao: r.sugestao||r.sugestoes||''
+        function exportarRelatorioPeriodo() {
+            const periodo = JSON.parse(localStorage.getItem('relatorioPeriodo') || '{}');
+            if (!periodo.dataInicio || !periodo.dataFim) {
+                mostrarNotificacaoFeedback('⚠️ Gere relatório primeiro!', 'error');
+                return;
+            }
+            
+            const sessoesNoPeriodo = historico.filter(h => {
+                if (!h.data || h.data === '-') return false;
+                return h.data >= periodo.dataInicio && h.data <= periodo.dataFim;
+            });
+            
+            const csv = dados2CSV(sessoesNoPeriodo);
+            const filename = `VRVS_RELATORIO_${periodo.dataInicio}_${periodo.dataFim}.csv`;
+            downloadCSV(csv, filename);
+        }
+        
+        function updateStats() {
+            document.getElementById('statTemas').textContent = dados.length;
+            const totalSessoes = historico.length;
+            document.getElementById('statSessoes').textContent = totalSessoes;
+            const rendimentoMedio = totalSessoes > 0 
+                ? Math.round((historico.reduce((sum, h) => sum + (h.rendimento || 0), 0) / totalSessoes) * 100)
+                : 0;
+            document.getElementById('statRendimento').textContent = rendimentoMedio + '%';
+            const totalMinutos = historico.reduce((sum, h) => sum + (h.tempo || 0), 0);
+            const totalHoras = Math.round(totalMinutos / 60);
+            document.getElementById('statTempo').textContent = totalHoras + 'h';
+            
+            renderChartBarras();
+            renderChartLinha();
+            renderChartRadar();
+        }
+        
+        // ==================== GRÁFICOS POR ÁREA! ====================
+        
+        const COLORS_PALETTE = [
+            '#00FFE0', '#00CED1', '#FFA366', '#FF7F50', '#E55100',
+            '#0d9488', '#0f766e', '#134e4a', '#B23A00', '#FFAA00',
+            '#40E0D0', '#FF6347', '#00BFFF', '#FFD700', '#FF69B4'
+        ];
+        let areaColorMap = {};
+        let colorIndex = 0;
+        
+        function getColorForArea(area) {
+            if (!areaColorMap[area]) {
+                areaColorMap[area] = COLORS_PALETTE[colorIndex % COLORS_PALETTE.length];
+                colorIndex++;
+            }
+            return areaColorMap[area];
+        }
+        
+        let chartBarrasInst = null;
+        let chartLinhaInst = null;
+        let chartRadarInst = null;
+        
+        // GRÁFICO 1: Performance média POR ÁREA
+        function renderChartBarras() {
+            const ctx = document.getElementById('chartBarras');
+            if (!ctx) return;
+            
+            // AGRUPAR POR ÁREA!!!
+            const areaStats = {};
+            historico.forEach(h => {
+                if (!h.rendimento) return;
+                const areaNormalizada = normalizeArea(h.area, h.tema);
+                if (!areaNormalizada || areaNormalizada.trim() === '') return;
+                
+                if (!areaStats[areaNormalizada]) {
+                    areaStats[areaNormalizada] = { total: 0, count: 0 };
+                }
+                areaStats[areaNormalizada].total += h.rendimento * 100;
+                areaStats[areaNormalizada].count += 1;
+            });
+            
+            const areaRendimento = [];
+            for (let area in areaStats) {
+                const media = Math.round(areaStats[area].total / areaStats[area].count);
+                areaRendimento.push([area, media]);
+            }
+            const sorted = areaRendimento.sort((a, b) => b[1] - a[1]);
+            
+            if (sorted.length === 0) {
+                if (chartBarrasInst) { chartBarrasInst.destroy(); chartBarrasInst = null; }
+                return;
+            }
+            if (chartBarrasInst) { chartBarrasInst.destroy(); }
+            
+            const backgroundColors = sorted.map(s => getColorForArea(s[0]));
+            
+            chartBarrasInst = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(s => s[0]),
+                    datasets: [{
+                        label: 'Performance Média (%)',
+                        data: sorted.map(s => s[1]),
+                        backgroundColor: backgroundColors,
+                        borderColor: backgroundColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Performance Média por Área',
+                            color: '#00CED1',
+                            font: { size: 14, weight: 'bold' }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 26, 31, 0.9)',
+                            borderColor: '#00CED1',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: 'rgba(0,206,209,0.7)', font: { size: 10 } },
+                            grid: { color: 'rgba(0,206,209,0.1)' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: 'rgba(0,206,209,0.7)', callback: val => val + '%' },
+                            grid: { color: 'rgba(0,206,209,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // GRÁFICO 2: Evolução POR ÁREA
+        function renderChartLinha() {
+            const ctx = document.getElementById('chartLinha');
+            if (!ctx) return;
+            
+            // AGRUPAR POR ÁREA!!!
+            const areasSessoes = {};
+            historico.forEach(h => {
+                const area = normalizeArea(h.area, h.tema);
+                if (!area) return;
+                
+                if (!areasSessoes[area]) {
+                    areasSessoes[area] = [];
+                }
+                areasSessoes[area].push({
+                    rendimento: (h.rendimento || 0) * 100,
+                    sessao: areasSessoes[area].length + 1
+                });
+            });
+            
+            const datasets = Object.entries(areasSessoes).map(([area, sessoes]) => {
+                const color = getColorForArea(area);
+                return {
+                    label: area,
+                    data: sessoes.map(s => ({ x: s.sessao, y: s.rendimento })),
+                    borderColor: color,
+                    backgroundColor: color + '33',
+                    tension: 0.3,
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                };
+            });
+            
+            if (datasets.length === 0) {
+                if (chartLinhaInst) { chartLinhaInst.destroy(); chartLinhaInst = null; }
+                return;
+            }
+            
+            if (chartLinhaInst) { chartLinhaInst.destroy(); }
+            chartLinhaInst = new Chart(ctx, {
+                type: 'line',
+                data: { datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { color: 'rgba(0,206,209,0.7)', font: { size: 10 } }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Evolução da Performance',
+                            color: '#00CED1',
+                            font: { size: 14, weight: 'bold' }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 26, 31, 0.9)',
+                            borderColor: '#00CED1',
+                            borderWidth: 1,
+                            callbacks: {
+                                title: function(context) {
+                                    const area = context[0].dataset.label;
+                                    const sessao = context[0].parsed.x;
+                                    return `${area} - Sessão ${sessao}`;
+                                },
+                                label: function(context) {
+                                    return `Performance: ${Math.round(context.parsed.y)}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: {
+                                display: true,
+                                text: 'Número da Sessão',
+                                color: 'rgba(0,206,209,0.7)'
+                            },
+                            ticks: { color: 'rgba(0,206,209,0.7)', stepSize: 1 },
+                            grid: { color: 'rgba(0,206,209,0.1)' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Rendimento (%)',
+                                color: 'rgba(0,206,209,0.7)'
+                            },
+                            ticks: { color: 'rgba(0,206,209,0.7)', callback: val => val + '%' },
+                            grid: { color: 'rgba(0,206,209,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // GRÁFICO 3: Radar POR ÁREA
+        function renderChartRadar() {
+            const ctx = document.getElementById('chartRadar');
+            if (!ctx) return;
+            
+            // AGRUPAR POR ÁREA!!!
+            const areaStats = {};
+            historico.forEach(h => {
+                if (!h.rendimento) return;
+                const area = normalizeArea(h.area, h.tema);
+                if (!area) return;
+                
+                if (!areaStats[area]) {
+                    areaStats[area] = { total: 0, count: 0 };
+                }
+                areaStats[area].total += h.rendimento * 100;
+                areaStats[area].count += 1;
+            });
+            
+            const areas = [];
+            const rendimentos = [];
+            for (let area in areaStats) {
+                areas.push(area);
+                rendimentos.push(Math.round(areaStats[area].total / areaStats[area].count));
+            }
+            
+            if (areas.length === 0) {
+                if (chartRadarInst) { chartRadarInst.destroy(); chartRadarInst = null; }
+                return;
+            }
+            
+            if (chartRadarInst) { chartRadarInst.destroy(); }
+            chartRadarInst = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: areas,
+                    datasets: [{
+                        label: 'Performance Média',
+                        data: rendimentos,
+                        borderColor: '#00FFE0',
+                        backgroundColor: 'rgba(0, 255, 224, 0.2)',
+                        borderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: '#00FFE0',
+                        pointBorderColor: '#0a1a1f',
+                        pointHoverBackgroundColor: '#FFA366',
+                        pointHoverBorderColor: '#0a1a1f'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Mapa de Performance',
+                            color: '#00CED1',
+                            font: { size: 14, weight: 'bold' }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 26, 31, 0.9)',
+                            borderColor: '#00CED1',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                color: 'rgba(0,206,209,0.5)',
+                                backdropColor: 'transparent',
+                                stepSize: 20,
+                                callback: val => val + '%'
+                            },
+                            grid: { color: 'rgba(0,206,209,0.2)' },
+                            angleLines: { color: 'rgba(0,206,209,0.1)' },
+                            pointLabels: {
+                                color: 'rgba(0,206,209,0.8)',
+                                font: { size: 11 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // ==================== IMPORTAÇÃO/EXPORTAÇÃO ====================
+        
+        function limparTudo() {
+            if (!confirm('⚠️ ATENÇÃO: Apagar TODOS os dados?')) return;
+            if (!confirm('⚠️ CONFIRMAÇÃO FINAL: Operação irreversível!')) return;
+            
+            localStorage.removeItem('vrvs_dados');
+            localStorage.removeItem('vrvs_historico');
+            localStorage.removeItem('ultimoBackup');
+            dados = [];
+            historico = [];
+            
+            renderDados();
+            renderTarefas();
+            renderAgenda();
+            renderHistorico();
+            renderPendencias();
+            updateFeedbackSelect();
+            updateStats();
+            
+            mostrarNotificacaoFeedback('🗑️ Reset completo executado');
+        }
+        
+        function importarArquivos() {
+            const dadosFile = document.getElementById('importDados').files[0];
+            const historicoFile = document.getElementById('importHistorico').files[0];
+            
+            if (!dadosFile && !historicoFile) {
+                mostrarNotificacaoFeedback('❌ Selecione arquivo para importar!', 'error');
+                return;
+            }
+            
+            const promises = [];
+            
+            if (dadosFile) {
+                promises.push(parseCSV(dadosFile).then(dadosCSV => {
+                    dados = dadosCSV.map(t => {
+                        if (!t.id) t.id = Date.now() + Math.random();
+                        t.area = normalizeArea(t.area, t.tema);
+                        if (t.rendimento > 1) t.rendimento = t.rendimento / 100;
+                        t.prioridade = parseInt(t.prioridade) || 3;
+                        t.sessoes = parseInt(t.sessoes) || 0;
+                        t.tempo = parseInt(t.tempo) || 0;
+                        t.contador80 = parseInt(t.contador80) || 0;
+                        if (!t.sugestao || t.sugestao === '-') {
+                            t.sugestao = extrairUltimaSugestao(t.observacoes);
+                        }
+                        delete t.tipoRevisao;
+                        return t;
+                    });
+                    localStorage.setItem('vrvs_dados', JSON.stringify(dados));
+                    return 'dados';
+                }));
+            }
+            
+            if (historicoFile) {
+                promises.push(parseCSV(historicoFile).then(historicoCSV => {
+                    historico = historicoCSV.map(h => {
+                        if (!h.id) h.id = Date.now() + Math.random();
+                        h.area = normalizeArea(h.area, h.tema);
+                        if (h.rendimento > 1) h.rendimento = h.rendimento / 100;
+                        h.tempo = parseInt(h.tempo) || 0;
+                        if (!h.data || h.data === '-') {
+                            const obsMatch = (h.observacoes || '').match(/^(\d{4}-\d{2}-\d{2}):/);
+                            if (obsMatch) {
+                                h.data = obsMatch[1];
+                            }
+                        }
+                        if (!h.sugestao || h.sugestao === '-') {
+                            h.sugestao = extrairUltimaSugestao(h.observacoes);
+                        }
+                        return h;
+                    });
+                    localStorage.setItem('vrvs_historico', JSON.stringify(historico));
+                    return 'historico';
+                }));
+            }
+            
+            Promise.all(promises)
+                .then(results => {
+                    const msg = results.map(r => r === 'dados' ? 'Dados' : 'Histórico').join(' e ');
+                    mostrarNotificacaoFeedback(`✅ ${msg} importados com sucesso!`);
+                    document.getElementById('importDados').value = '';
+                    document.getElementById('importHistorico').value = '';
+                    renderDados();
+                    renderTarefas();
+                    renderAgenda();
+                    renderHistorico();
+                    renderPendencias();
+                    updateFeedbackSelect();
+                    updateStats();
+                })
+                .catch(error => {
+                    mostrarNotificacaoFeedback(`❌ Erro: ${error.message}`, 'error');
+                });
+        }
+        
+        function parseCSV(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+                reader.onload = (e) => {
+                    try {
+                        const text = e.target.result;
+                        const rows = parseCSVText(text);
+                        if (rows.length < 2) {
+                            reject(new Error('Arquivo vazio ou inválido'));
+                            return;
+                        }
+                        const headers = rows[0];
+                        const headersNormalizados = headers.map(h => 
+                            h.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '').replace(/[()]/g, '').replace(/\./g, '')
+                        );
+                        const headerMap = {};
+                        headersNormalizados.forEach((h, i) => { headerMap[h] = i; });
+                        const getVal = (r, ...possiveisNomes) => {
+                            for (const nome of possiveisNomes) {
+                                const idx = headerMap[nome];
+                                if (idx !== undefined && r[idx]) {
+                                    return stripOuterQuotes(r[idx]);
+                                }
+                            }
+                            return '';
+                        };
+                        const data = rows.slice(1).map((r, lineNum) => {
+                            return {
+                                id: getVal(r, 'id') || `${Date.now()}_${lineNum}`,
+                                area: getVal(r, 'area', 'topico'),
+                                tema: getVal(r, 'tema', 'assunto', 'titulo'),
+                                status: getVal(r, 'status', 'estado') || 'Não iniciado',
+                                prioridade: parseInt(getVal(r, 'prioridade', 'prior')) || 3,
+                                dificuldade: getVal(r, 'dificuldade', 'dific') || 'Média',
+                                rendimento: (() => {
+                                    const valStr = getVal(r, 'rendimento', 'rend');
+                                    if (!valStr) return 0;
+                                    const cleanStr = valStr.replace('%', '').replace(',', '.');
+                                    const val = parseFloat(cleanStr) || 0;
+                                    return val > 1 ? val / 100 : val;
+                                })(),
+                                sessoes: parseInt(getVal(r, 'sessoes', 'sessao')) || 0,
+                                ultEstudo: getVal(r, 'ultestudo', 'ultest', 'ultimoestudo', 'ultimo_estudo'),
+                                agenda: getVal(r, 'dataagenda', 'agenda', 'data_agenda'),
+                                tempo: parseInt(getVal(r, 'tempomin', 'tempo')) || 0,
+                                observacoes: getVal(r, 'observacoes', 'obs', 'observacao'),
+                                contador80: parseInt(getVal(r, 'contador80')) || 0,
+                                sugestao: getVal(r, 'sugestao', 'sugestoes'),
+                                data: getVal(r, 'data'),
+                                temaId: getVal(r, 'temaid')
+                            };
+                        }).filter(obj => obj.tema && obj.tema.trim() !== '');
+                        resolve(data);
+                    } catch (err) {
+                        reject(err);
+                    }
+                };
+                reader.readAsText(file, 'UTF-8');
+            });
+        }
+        
+        function parseCSVText(input) {
+            let text = String(input || '').replace(/^\uFEFF/, '');
+            const rows = [];
+            let row = [];
+            let cell = '';
+            let i = 0;
+            let inQuotes = false;
+            while (i < text.length) {
+                const ch = text[i];
+                if (inQuotes) {
+                    if (ch === '"') {
+                        const next = text[i + 1];
+                        if (next === '"') {
+                            cell += '"';
+                            i += 2;
+                        } else {
+                            inQuotes = false;
+                            i += 1;
+                        }
+                    } else {
+                        cell += ch;
+                        i += 1;
+                    }
+                } else {
+                    if (ch === '"') {
+                        inQuotes = true;
+                        i += 1;
+                    } else if (ch === ',') {
+                        row.push(cell);
+                        cell = '';
+                        i += 1;
+                    } else if (ch === '\r') {
+                        row.push(cell);
+                        rows.push(row);
+                        row = [];
+                        cell = '';
+                        if (text[i + 1] === '\n') i += 2; else i += 1;
+                    } else if (ch === '\n') {
+                        row.push(cell);
+                        rows.push(row);
+                        row = [];
+                        cell = '';
+                        i += 1;
+                    } else {
+                        cell += ch;
+                        i += 1;
+                    }
+                }
+            }
+            row.push(cell);
+            rows.push(row);
+            return rows;
+        }
+        
+        function stripOuterQuotes(s) {
+            const str = String(s ?? '');
+            if (str.length >= 2 && str[0] === '"' && str[str.length - 1] === '"') {
+                return str.slice(1, -1).replace(/""/g, '"');
+            }
+            return str;
+        }
+        
+        function exportarDados() {
+            const csv = dados2CSV(dados);
+            const hoje = new Date().toISOString().split('T')[0];
+            downloadCSV(csv, `VRVS_DADOS_${hoje}.csv`);
+        }
+        
+        function exportarHistorico() {
+            const csv = dados2CSV(historico);
+            const hoje = new Date().toISOString().split('T')[0];
+            downloadCSV(csv, `VRVS_HISTORICO_${hoje}.csv`);
+        }
+        
+        function dados2CSV(arr) {
+            if (arr.length === 0) return '';
+            const headers = Object.keys(arr[0]);
+            const rows = arr.map(obj => headers.map(h => {
+                const val = obj[h] || '';
+                const escaped = String(val).replace(/"/g, '""');
+                return (escaped.includes(',') || escaped.includes('\n')) ? `"${escaped}"` : escaped;
+            }).join(','));
+            return [headers.join(','), ...rows].join('\n');
+        }
+        
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+        }
+        
+        // ==================== NAVEGAÇÃO ====================
+        
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+            if (sectionId === 'dados') renderDados();
+            if (sectionId === 'tarefa') renderTarefas();
+            if (sectionId === 'agenda') renderAgenda();
+            if (sectionId === 'stats') updateStats();
+            if (sectionId === 'historico') renderHistorico();
+            if (sectionId === 'pendencias') renderPendencias();
+        }
+        
+        // ==================== INICIALIZAÇÃO ====================
+        
+        window.onload = function() {
+            // Inicializar campo de data com hoje
+            document.getElementById('feedbackData').value = new Date().toISOString().split('T')[0];
+            
+            // CADASTRO FORM
+            document.getElementById('cadastroForm').onsubmit = function(e) {
+                e.preventDefault();
+                const area = document.getElementById('novaArea').value.trim();
+                const tema = document.getElementById('novoTema').value.trim();
+                const prioridade = parseInt(document.getElementById('novaPrioridade').value);
+                const dataInicio = document.getElementById('novaDataInicio').value;
+                
+                const novoTema = {
+                    id: Date.now(),
+                    area: normalizeArea(area, tema),
+                    tema: tema,
+                    status: 'Planejado',
+                    prioridade: prioridade,
+                    dificuldade: 'Média',
+                    rendimento: 0,
+                    sessoes: 0,
+                    ultEstudo: '',
+                    agenda: dataInicio || '',
+                    tempo: 0,
+                    observacoes: '',
+                    contador80: 0,
+                    sugestao: ''
+                };
+                
+                dados.push(novoTema);
+                localStorage.setItem('vrvs_dados', JSON.stringify(dados));
+                this.reset();
+                mostrarNotificacaoFeedback('✅ Tema adicionado com sucesso!');
+                renderDados();
+                updateFeedbackSelect();
+                renderPendencias();
+            };
+            
+            // FEEDBACK FORM - 100% FUNCIONANDO!
+            document.getElementById('feedbackForm').onsubmit = function(e) {
+                e.preventDefault();
+                const temaId = document.getElementById('feedbackTema').value;
+                const dataSessao = document.getElementById('feedbackData').value;
+                const rendimento = parseInt(document.getElementById('feedbackRendimento').value);
+                const tempo = parseInt(document.getElementById('feedbackTempo').value) || 0;
+                const sugestao = document.getElementById('feedbackSugestao').value.trim();
+                const obs = document.getElementById('feedbackObs').value.trim();
+                
+                // CORREÇÃO: Comparação correta de IDs
+                const tema = dados.find(t => String(t.id) === String(temaId));
+                if (!tema) {
+                    mostrarNotificacaoFeedback('⚠️ Módulo não encontrado! Selecione um módulo válido.', 'error');
+                    return;
+                }
+                
+                // Atualizar contador80
+                if (rendimento >= 80) {
+                    tema.contador80 = (tema.contador80 || 0) + 1;
+                } else {
+                    tema.contador80 = 0;
+                }
+                
+                // Atualizar dados do tema
+                tema.rendimento = rendimento / 100;
+                tema.sessoes = (tema.sessoes || 0) + 1;
+                tema.ultEstudo = dataSessao;
+                tema.agenda = calcularProximaRevisao(tema);
+                tema.tempo = (tema.tempo || 0) + tempo;
+                tema.status = tema.sessoes === 1 ? 'Em estudo' : tema.status;
+                
+                // Adicionar observações E sugestão
+                let novaObs = '';
+                if (obs) novaObs = `${dataSessao}: ${obs}`;
+                if (sugestao) novaObs += (novaObs ? ' | ' : '') + `Sugestão: ${sugestao}`;
+                
+                if (novaObs) {
+                    tema.observacoes = tema.observacoes 
+                        ? tema.observacoes + '\n' + novaObs
+                        : novaObs;
+                }
+                
+                // SALVAR SUGESTÃO NO TEMA
+                tema.sugestao = sugestao || '';
+                
+                // ADICIONAR AO HISTÓRICO
+                historico.push({
+                    id: Date.now(),
+                    temaId: tema.id,
+                    area: tema.area,
+                    tema: tema.tema,
+                    rendimento: rendimento / 100,
+                    tempo: tempo,
+                    data: dataSessao,
+                    observacoes: obs || '-',
+                    sugestao: sugestao || '-'
+                });
+                
+                localStorage.setItem('vrvs_dados', JSON.stringify(dados));
+                localStorage.setItem('vrvs_historico', JSON.stringify(historico));
+                
+                this.reset();
+                document.getElementById('feedbackData').value = new Date().toISOString().split('T')[0];
+                
+                // NOTIFICAÇÃO DE SUCESSO!
+                const proximaData = new Date(tema.agenda + 'T00:00:00').toLocaleDateString('pt-BR');
+                mostrarNotificacaoFeedback(`✅ Performance registrada!<br>📅 Próxima revisão: ${proximaData}`);
+                
+                renderTarefas();
+                renderAgenda();
+                renderDados();
+                renderHistorico();
+                renderPendencias();
+                updateStats();
+            };
+            
+            // EDIT FORM
+            document.getElementById('editForm').onsubmit = function(e) {
+                e.preventDefault();
+                const id = document.getElementById('editId').value;
+                const tema = dados.find(t => String(t.id) === String(id));
+                
+                if (!tema) {
+                    mostrarNotificacaoFeedback('⚠️ Tema não encontrado!', 'error');
+                    return;
+                }
+                
+                tema.area = normalizeArea(document.getElementById('editArea').value.trim());
+                tema.tema = document.getElementById('editTema').value.trim();
+                tema.prioridade = parseInt(document.getElementById('editPrioridade').value);
+                tema.status = document.getElementById('editStatus').value;
+                
+                // Recalcular agenda se necessário
+                if (tema.sessoes > 0) {
+                    tema.agenda = calcularProximaRevisao(tema);
+                }
+                
+                localStorage.setItem('vrvs_dados', JSON.stringify(dados));
+                
+                closeEditModal();
+                mostrarNotificacaoFeedback('✅ Tema atualizado com sucesso!');
+                
+                renderDados();
+                renderTarefas();
+                renderAgenda();
+                renderPendencias();
+                updateFeedbackSelect();
+            };
+            
+            // Inicializações
+            renderTarefas();
+            renderAgenda();
+            renderDados();
+            renderPendencias();
+            updateFeedbackSelect();
+            updateStats();
+            renderHistorico();
         };
-        if(!t.sugestao) t.sugestao = extrairUltimaSugestao(t.observacoes);
-        return t;
-      }).filter(o=>o.tema && o.tema.trim()!=='');
-      save();
-    }
-    if(fH){
-      const arr = await parseCSVFile(fH);
-      historico = arr.map(r=>{
-        const h={
-          id: r.id || (Date.now()+Math.random()),
-          temaId: r.temaid || r.temaId || '',
-          area: normalizeArea(r.area),
-          tema: r.tema,
-          rendimento: (r.rendimento? (String(r.rendimento).includes('%')? parseFloat(String(r.rendimento).replace('%','').replace(',','.'))/100 : (+r.rendimento>1? +r.rendimento/100 : +r.rendimento)) : 0),
-          tempo: parseInt(r.tempo)||0,
-          data: r.data||'',
-          observacoes: r.observacoes||r.obs||'',
-          sugestao: r.sugestao||''
-        };
-        if(!h.data || h.data==='-'){ const m=(h.observacoes||'').match(/^(\d{4}-\d{2}-\d{2}):/); if(m) h.data=m[1]; }
-        if(!h.sugestao) h.sugestao = extrairUltimaSugestao(h.observacoes);
-        return h;
-      }).filter(o=>o.tema && o.tema.trim()!=='');
-      save();
-    }
-    sanitizeAll(); toast('✅ Importação concluída');
-    renderDados(); renderHistorico(); renderTarefas(); renderAgenda(); renderPendencias(); renderStats(); updateFeedbackSelects();
-  }catch(e){ console.error(e); toast('Erro ao importar: '+e.message,false); }
-};
-document.getElementById('btnExpDados').onclick=()=>downloadCSV(toCSV(dados),'VRVS_DADOS_'+today()+'.csv');
-document.getElementById('btnExpHist').onclick=()=>downloadCSV(toCSV(historico),'VRVS_HISTORICO_'+today()+'.csv');
-
-function today(){ return new Date().toISOString().split('T')[0]; }
-function toCSV(arr){
-  if(!arr.length) return '';
-  const headers = Object.keys(arr[0]);
-  const rows = arr.map(o=>headers.map(h=>{
-    const v = o[h]??''; const s = String(v).replace(/"/g,'""');
-    return (s.includes(',')||s.includes('\n'))? `"${s}"` : s;
-  }).join(','));
-  return [headers.join(','),...rows].join('\n');
-}
-function downloadCSV(csv, name){
-  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'}), url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download=name; a.click();
-}
-function parseCSVFile(file){
-  return new Promise((res,rej)=>{
-    const r=new FileReader();
-    r.onerror=()=>rej(new Error('Leitura falhou'));
-    r.onload=()=>{ try{ res(parseCSVText(r.result)); }catch(e){ rej(e); } };
-    r.readAsText(file,'UTF-8');
-  });
-}
-function parseCSVText(txt){
-  txt=String(txt||'').replace(/^\uFEFF/,''); const rows=[]; let row=[],cell='',i=0,q=false;
-  while(i<txt.length){ const ch=txt[i];
-    if(q){ if(ch=='"'){ if(txt[i+1]=='"'){cell+='"'; i+=2;} else {q=false; i++;} }
-          else {cell+=ch; i++;} }
-    else { if(ch=='"'){ q=true; i++; }
-           else if(ch==','){ row.push(cell); cell=''; i++; }
-           else if(ch=='\r'){ row.push(cell); rows.push(row); row=[]; cell=''; if(txt[i+1]=='\n') i+=2; else i++; }
-           else if(ch=='\n'){ row.push(cell); rows.push(row); row=[]; cell=''; i++; }
-           else { cell+=ch; i++; } }
-  }
-  row.push(cell); rows.push(row);
-  if(rows.length<2) return [];
-  const heads = rows[0].map(h=>String(h).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'').replace(/[().]/g,''));
-  const map={}; heads.forEach((h,i)=>map[h]=i);
-  const get=(r,...names)=>{ for(const n of names){ const ix=map[n]; if(ix!=null && r[ix]!=null && r[ix]!=='') return strip(r[ix]); } return ''; };
-  function strip(s){ const t=String(s); if(t.startsWith('"')&&t.endsWith('"')) return t.slice(1,-1).replace(/""/g,'"'); return t; }
-  const out = rows.slice(1).map((r,k)=>({
-    id:get(r,'id')||`${Date.now()}_${k}`,
-    area:get(r,'area','topico'), tema:get(r,'tema','assunto','titulo'), status:get(r,'status','estado'),
-    prioridade:get(r,'prioridade','prior'), dificuldade:get(r,'dificuldade','dific'),
-    rendimento:get(r,'rendimento','rend'), sessoes:get(r,'sessoes','sessao'),
-    ultestudo:get(r,'ultestudo','ultest','ultimoestudo','ultimo_estudo'),
-    dataagenda:get(r,'dataagenda','agenda','data_agenda'), tempomin:get(r,'tempomin','tempo'),
-    observacoes:get(r,'observacoes','obs','observacao'), contador80:get(r,'contador80'),
-    sugestao:get(r,'sugestao','sugestoes'), data:get(r,'data'), temaid:get(r,'temaid')
-  }));
-  return out;
-}
-
-/* ====== Inicialização ====== */
-(function init(){
-  // Data default no Feedback
-  document.getElementById('fbData').value = today();
-  renderDados(); renderPendencias(); renderTarefas(); updateFeedbackSelects(); renderStats();
-})();
-</script>
+    </script>
 </body>
 </html>

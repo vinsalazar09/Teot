@@ -1132,6 +1132,7 @@
             <div class="tab" onclick="showSection('agenda')">📅 Agenda</div>
             <div class="tab" onclick="showSection('pendencias')">🔔 Pendências</div>
             <div class="tab" onclick="showSection('stats')">📈 Estatísticas</div>
+            <div class="tab" onclick="showSection('analises')">🔍 Análises</div>
             <div class="tab" onclick="showSection('historico')">📜 Histórico</div>
             <div class="tab" onclick="showSection('lembretes')">📌 Lembretes</div>
             <div class="tab" onclick="showSection('caderno')">📔 Caderno</div>
@@ -1350,6 +1351,14 @@
                             <div class="stat-value" id="statTempo">0h</div>
                             <div class="stat-label">Tempo Investido</div>
                         </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statQuestoes">0</div>
+                            <div class="stat-label">Questões Resolvidas</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statFlashcards">0</div>
+                            <div class="stat-label">Flashcards Revisados</div>
+                        </div>
                     </div>
                 </div>
                 <div class="card">
@@ -1362,6 +1371,43 @@
                     </div>
                     <div style="margin-bottom: 30px;">
                         <canvas id="chartRadar" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ANÁLISES DETALHADAS -->
+            <div id="analises" class="section">
+                <div class="card">
+                    <div class="card-title">🔍 ANÁLISES DETALHADAS</div>
+                    <div style="margin-bottom: 20px;">
+                        <div class="form-group">
+                            <label class="form-label">Filtrar por Área</label>
+                            <select class="form-select" id="analiseFiltroArea" onchange="atualizarSelectTemaAnalise(); atualizarAnalises();">
+                                <option value="">Todas as áreas</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Filtrar por Tema</label>
+                            <select class="form-select" id="analiseFiltroTema" onchange="calcularAnalises()">
+                                <option value="">Todos os temas</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Período</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <input type="date" class="form-input" id="analiseDataInicio" onchange="atualizarAnalises()">
+                                <input type="date" class="form-input" id="analiseDataFim" onchange="atualizarAnalises()">
+                            </div>
+                            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                <button class="btn btn-small" onclick="filtrarAnaliseSemanaAtual()">Semana Atual</button>
+                                <button class="btn btn-small" onclick="filtrarAnaliseMesAtual()">Mês Atual</button>
+                                <button class="btn btn-small" onclick="limparFiltrosAnalise()">Limpar Filtros</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="analiseResultados" style="margin-top: 30px;">
+                        <!-- Resultados serão renderizados aqui -->
                     </div>
                 </div>
             </div>
@@ -2278,6 +2324,26 @@
             const totalHoras = Math.round(totalMinutos / 60);
             document.getElementById('statTempo').textContent = totalHoras + 'h';
             
+            // Calcular questões totais (somar acertos de todas as questões)
+            let totalQuestoesAcertos = 0;
+            let totalQuestoesTotal = 0;
+            historicoAtivo.forEach(h => {
+                if (h.questoes) {
+                    const match = h.questoes.match(/(\d+)\/(\d+)/);
+                    if (match) {
+                        totalQuestoesAcertos += parseInt(match[1]);
+                        totalQuestoesTotal += parseInt(match[2]);
+                    }
+                }
+            });
+            document.getElementById('statQuestoes').textContent = totalQuestoesTotal > 0 
+                ? `${totalQuestoesAcertos}/${totalQuestoesTotal}` 
+                : '0';
+            
+            // Calcular flashcards totais
+            const totalFlashcards = historicoAtivo.reduce((sum, h) => sum + (parseInt(h.flashcards) || 0), 0);
+            document.getElementById('statFlashcards').textContent = totalFlashcards.toLocaleString();
+            
             renderChartBarras();
             renderChartLinha();
             renderChartRadar();
@@ -2889,6 +2955,297 @@
                 atualizarSelectsCaderno();
                 renderCaderno();
             }
+            if (sectionId === 'analises') {
+                atualizarSelectsAnalise();
+                atualizarAnalises();
+            }
+        }
+        
+        // ==================== ANÁLISES DETALHADAS ====================
+        
+        function atualizarSelectsAnalise() {
+            // Atualizar select de áreas
+            const areaSelect = document.getElementById('analiseFiltroArea');
+            const areas = [...new Set(dados.filter(t => t.status !== 'Suspenso').map(t => t.area))].sort();
+            areaSelect.innerHTML = '<option value="">Todas as áreas</option>';
+            areas.forEach(area => {
+                areaSelect.innerHTML += `<option value="${area}">${area}</option>`;
+            });
+            
+            // Atualizar select de temas baseado na área selecionada
+            atualizarSelectTemaAnalise();
+        }
+        
+        function atualizarSelectTemaAnalise() {
+            const temaSelect = document.getElementById('analiseFiltroTema');
+            const areaSelecionada = document.getElementById('analiseFiltroArea').value;
+            
+            let temasFiltrados = dados.filter(t => t.status !== 'Suspenso');
+            if (areaSelecionada) {
+                temasFiltrados = temasFiltrados.filter(t => t.area === areaSelecionada);
+            }
+            
+            const temas = [...new Set(temasFiltrados.map(t => `${t.area} - ${t.tema}`))].sort();
+            temaSelect.innerHTML = '<option value="">Todos os temas</option>';
+            temas.forEach(tema => {
+                temaSelect.innerHTML += `<option value="${tema}">${tema}</option>`;
+            });
+        }
+        
+        function atualizarAnalises() {
+            calcularAnalises();
+        }
+        
+        function calcularAnalises() {
+            const areaFiltro = document.getElementById('analiseFiltroArea').value;
+            const temaFiltro = document.getElementById('analiseFiltroTema').value;
+            const dataInicio = document.getElementById('analiseDataInicio').value;
+            const dataFim = document.getElementById('analiseDataFim').value;
+            
+            // Filtrar histórico
+            let historicoFiltrado = historico.filter(h => {
+                const tema = dados.find(t => String(t.id) === String(h.temaId));
+                if (!tema || tema.status === 'Suspenso') return false;
+                
+                // Filtrar por área
+                if (areaFiltro && tema.area !== areaFiltro) return false;
+                
+                // Filtrar por tema
+                if (temaFiltro) {
+                    const temaCompleto = `${tema.area} - ${tema.tema}`;
+                    if (temaCompleto !== temaFiltro) return false;
+                }
+                
+                // Filtrar por período
+                if (dataInicio && h.data < dataInicio) return false;
+                if (dataFim && h.data > dataFim) return false;
+                
+                return true;
+            });
+            
+            if (historicoFiltrado.length === 0) {
+                document.getElementById('analiseResultados').innerHTML = 
+                    '<div class="empty-state"><div class="empty-icon">📊</div><div>Nenhum dado encontrado para os filtros selecionados</div></div>';
+                return;
+            }
+            
+            // Calcular estatísticas
+            const totalSessoes = historicoFiltrado.length;
+            const rendimentoMedio = totalSessoes > 0 
+                ? Math.round((historicoFiltrado.reduce((sum, h) => sum + (h.rendimento || 0), 0) / totalSessoes) * 100)
+                : 0;
+            const totalMinutos = historicoFiltrado.reduce((sum, h) => sum + (h.tempo || 0), 0);
+            const totalHoras = Math.round(totalMinutos / 60);
+            const totalMinutosResto = totalMinutos % 60;
+            
+            // Calcular questões
+            let totalQuestoesAcertos = 0;
+            let totalQuestoesTotal = 0;
+            historicoFiltrado.forEach(h => {
+                if (h.questoes) {
+                    const match = h.questoes.match(/(\d+)\/(\d+)/);
+                    if (match) {
+                        totalQuestoesAcertos += parseInt(match[1]);
+                        totalQuestoesTotal += parseInt(match[2]);
+                    }
+                }
+            });
+            const taxaAcertoQuestoes = totalQuestoesTotal > 0 
+                ? Math.round((totalQuestoesAcertos / totalQuestoesTotal) * 100)
+                : 0;
+            
+            // Calcular flashcards
+            const totalFlashcards = historicoFiltrado.reduce((sum, h) => sum + (parseInt(h.flashcards) || 0), 0);
+            
+            // Calcular intervalos
+            const totalIntervalos = historicoFiltrado.reduce((sum, h) => sum + (parseInt(h.numeroIntervalos) || 0), 0);
+            const tempoTotalIntervalos = historicoFiltrado.reduce((sum, h) => sum + (parseInt(h.tempoIntervalo) || 0), 0);
+            
+            // Agrupar por área (se não filtrado por área específica)
+            let porArea = {};
+            if (!areaFiltro) {
+                historicoFiltrado.forEach(h => {
+                    const tema = dados.find(t => String(t.id) === String(h.temaId));
+                    if (tema && tema.area) {
+                        if (!porArea[tema.area]) {
+                            porArea[tema.area] = {
+                                sessoes: 0,
+                                tempo: 0,
+                                rendimento: 0,
+                                questoes: { acertos: 0, total: 0 },
+                                flashcards: 0
+                            };
+                        }
+                        porArea[tema.area].sessoes++;
+                        porArea[tema.area].tempo += h.tempo || 0;
+                        porArea[tema.area].rendimento += h.rendimento || 0;
+                        
+                        if (h.questoes) {
+                            const match = h.questoes.match(/(\d+)\/(\d+)/);
+                            if (match) {
+                                porArea[tema.area].questoes.acertos += parseInt(match[1]);
+                                porArea[tema.area].questoes.total += parseInt(match[2]);
+                            }
+                        }
+                        porArea[tema.area].flashcards += parseInt(h.flashcards) || 0;
+                    }
+                });
+                
+                // Calcular médias
+                Object.keys(porArea).forEach(area => {
+                    porArea[area].rendimento = porArea[area].sessoes > 0 
+                        ? Math.round((porArea[area].rendimento / porArea[area].sessoes) * 100)
+                        : 0;
+                    porArea[area].tempoHoras = Math.round(porArea[area].tempo / 60);
+                });
+            }
+            
+            // Agrupar por tema (se não filtrado por tema específico)
+            let porTema = {};
+            if (!temaFiltro) {
+                historicoFiltrado.forEach(h => {
+                    const tema = dados.find(t => String(t.id) === String(h.temaId));
+                    if (tema) {
+                        const temaKey = `${tema.area} - ${tema.tema}`;
+                        if (!porTema[temaKey]) {
+                            porTema[temaKey] = {
+                                sessoes: 0,
+                                tempo: 0,
+                                rendimento: 0,
+                                questoes: { acertos: 0, total: 0 },
+                                flashcards: 0
+                            };
+                        }
+                        porTema[temaKey].sessoes++;
+                        porTema[temaKey].tempo += h.tempo || 0;
+                        porTema[temaKey].rendimento += h.rendimento || 0;
+                        
+                        if (h.questoes) {
+                            const match = h.questoes.match(/(\d+)\/(\d+)/);
+                            if (match) {
+                                porTema[temaKey].questoes.acertos += parseInt(match[1]);
+                                porTema[temaKey].questoes.total += parseInt(match[2]);
+                            }
+                        }
+                        porTema[temaKey].flashcards += parseInt(h.flashcards) || 0;
+                    }
+                });
+                
+                // Calcular médias
+                Object.keys(porTema).forEach(temaKey => {
+                    porTema[temaKey].rendimento = porTema[temaKey].sessoes > 0 
+                        ? Math.round((porTema[temaKey].rendimento / porTema[temaKey].sessoes) * 100)
+                        : 0;
+                    porTema[temaKey].tempoHoras = Math.round(porTema[temaKey].tempo / 60);
+                });
+            }
+            
+            // Renderizar resultados
+            let html = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${totalSessoes}</div>
+                        <div class="stat-label">Sessões</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${totalHoras}h${totalMinutosResto > 0 ? ' ' + totalMinutosResto + 'm' : ''}</div>
+                        <div class="stat-label">Tempo Total</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${rendimentoMedio}%</div>
+                        <div class="stat-label">Performance Média</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${totalQuestoesTotal > 0 ? totalQuestoesAcertos + '/' + totalQuestoesTotal : '0'}</div>
+                        <div class="stat-label">Questões (${taxaAcertoQuestoes}% acerto)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${totalFlashcards.toLocaleString()}</div>
+                        <div class="stat-label">Flashcards Revisados</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${totalIntervalos}</div>
+                        <div class="stat-label">Intervalos (${Math.round(tempoTotalIntervalos)} min)</div>
+                    </div>
+                </div>
+            `;
+            
+            // Detalhamento por área
+            if (!areaFiltro && Object.keys(porArea).length > 0) {
+                html += '<h5 style="color: var(--turquesa-light); margin: 30px 0 15px;">📊 Detalhamento por Área:</h5>';
+                html += '<div style="overflow-x: auto;"><table class="data-table"><thead><tr>';
+                html += '<th>Área</th><th>Sessões</th><th>Tempo</th><th>Performance</th><th>Questões</th><th>Flashcards</th>';
+                html += '</tr></thead><tbody>';
+                
+                Object.keys(porArea).sort().forEach(area => {
+                    const stats = porArea[area];
+                    html += '<tr>';
+                    html += `<td><strong>${area}</strong></td>`;
+                    html += `<td>${stats.sessoes}</td>`;
+                    html += `<td>${stats.tempoHoras}h</td>`;
+                    html += `<td>${stats.rendimento}%</td>`;
+                    html += `<td>${stats.questoes.total > 0 ? stats.questoes.acertos + '/' + stats.questoes.total + ' (' + Math.round((stats.questoes.acertos / stats.questoes.total) * 100) + '%)' : '-'}</td>`;
+                    html += `<td>${stats.flashcards > 0 ? stats.flashcards.toLocaleString() : '-'}</td>`;
+                    html += '</tr>';
+                });
+                
+                html += '</tbody></table></div>';
+            }
+            
+            // Detalhamento por tema
+            if (!temaFiltro && Object.keys(porTema).length > 0) {
+                html += '<h5 style="color: var(--turquesa-light); margin: 30px 0 15px;">📚 Detalhamento por Tema:</h5>';
+                html += '<div style="overflow-x: auto;"><table class="data-table"><thead><tr>';
+                html += '<th>Tema</th><th>Sessões</th><th>Tempo</th><th>Performance</th><th>Questões</th><th>Flashcards</th>';
+                html += '</tr></thead><tbody>';
+                
+                Object.keys(porTema).sort().forEach(temaKey => {
+                    const stats = porTema[temaKey];
+                    html += '<tr>';
+                    html += `<td><strong>${temaKey}</strong></td>`;
+                    html += `<td>${stats.sessoes}</td>`;
+                    html += `<td>${stats.tempoHoras}h</td>`;
+                    html += `<td>${stats.rendimento}%</td>`;
+                    html += `<td>${stats.questoes.total > 0 ? stats.questoes.acertos + '/' + stats.questoes.total + ' (' + Math.round((stats.questoes.acertos / stats.questoes.total) * 100) + '%)' : '-'}</td>`;
+                    html += `<td>${stats.flashcards > 0 ? stats.flashcards.toLocaleString() : '-'}</td>`;
+                    html += '</tr>';
+                });
+                
+                html += '</tbody></table></div>';
+            }
+            
+            document.getElementById('analiseResultados').innerHTML = html;
+        }
+        
+        function filtrarAnaliseSemanaAtual() {
+            const hoje = new Date();
+            const inicioSemana = new Date(hoje);
+            inicioSemana.setDate(hoje.getDate() - hoje.getDay());
+            const fimSemana = new Date(inicioSemana);
+            fimSemana.setDate(inicioSemana.getDate() + 6);
+            
+            document.getElementById('analiseDataInicio').value = inicioSemana.toISOString().split('T')[0];
+            document.getElementById('analiseDataFim').value = fimSemana.toISOString().split('T')[0];
+            atualizarAnalises();
+        }
+        
+        function filtrarAnaliseMesAtual() {
+            const hoje = new Date();
+            const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+            const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+            
+            document.getElementById('analiseDataInicio').value = inicioMes.toISOString().split('T')[0];
+            document.getElementById('analiseDataFim').value = fimMes.toISOString().split('T')[0];
+            atualizarAnalises();
+        }
+        
+        function limparFiltrosAnalise() {
+            document.getElementById('analiseFiltroArea').value = '';
+            document.getElementById('analiseFiltroTema').value = '';
+            document.getElementById('analiseDataInicio').value = '';
+            document.getElementById('analiseDataFim').value = '';
+            atualizarSelectsAnalise();
+            atualizarAnalises();
         }
         
         // ==================== CRONÔMETRO DA SESSÃO ====================

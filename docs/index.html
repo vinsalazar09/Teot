@@ -1053,6 +1053,7 @@
                     <select class="form-select" id="editStatus">
                         <option value="Planejado">Planejado</option>
                         <option value="Em estudo">Em estudo</option>
+                        <option value="Suspenso">Suspenso</option>
                         <option value="Concluído">Concluído</option>
                     </select>
                 </div>
@@ -1076,6 +1077,8 @@
             <div class="tab" onclick="showSection('pendencias')">🔔 Pendências</div>
             <div class="tab" onclick="showSection('stats')">📈 Estatísticas</div>
             <div class="tab" onclick="showSection('historico')">📜 Histórico</div>
+            <div class="tab" onclick="showSection('lembretes')">📌 Lembretes</div>
+            <div class="tab" onclick="showSection('caderno')">📔 Caderno</div>
             <div class="tab" onclick="showSection('relatorios')">📊 Relatórios</div>
             <div class="tab" onclick="showSection('importar')">📥 Importar</div>
             <div class="tab" onclick="showSection('exportar')">📤 Exportar</div>
@@ -1154,6 +1157,15 @@
                             <input type="number" class="form-input" id="novaPrioridade" min="1" max="5" value="3" required>
                         </div>
                         <div class="form-group">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="novaStatus">
+                                <option value="Planejado">Planejado</option>
+                                <option value="Em estudo">Em estudo</option>
+                                <option value="Suspenso">Suspenso</option>
+                                <option value="Concluído">Concluído</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
                             <label class="form-label">Data de Início</label>
                             <input type="date" class="form-input" id="novaDataInicio">
                         </div>
@@ -1173,10 +1185,18 @@
                             <div style="flex: 1; min-width: 200px;">
                                 <div style="font-size: 12px; color: rgba(0,206,209,0.7); margin-bottom: 5px;">⏱️ Tempo da Sessão</div>
                                 <div id="cronometroDisplay" style="font-size: 28px; font-weight: bold; color: #00FFE0; font-family: 'Courier New', monospace;">00:00:00</div>
+                                <div id="tempoIntervaloTotal" style="font-size: 11px; color: rgba(255,165,0,0.7); margin-top: 5px; display: none;">
+                                    ⏸️ Intervalo acumulado: <span id="tempoIntervaloTotalDisplay">00:00:00</span>
+                                </div>
                             </div>
                             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                                 <button id="cronometroToggle" class="btn btn-small" onclick="toggleCronometro()">⏱️ Iniciar Cronômetro</button>
+                                <button id="cronometroPausa" class="btn btn-small" onclick="pausarCronometro()">⏸️ Pausar</button>
+                                <button id="cronometroIntervalo" class="btn btn-small" onclick="iniciarIntervalo()">⏸️ Intervalo</button>
                                 <button id="cronometroReset" class="btn btn-small" onclick="resetCronometro()">🔄 Resetar</button>
+                            </div>
+                            <div id="tempoIntervalo" style="font-size: 11px; color: rgba(255,165,0,0.7); margin-top: 5px; display: none;">
+                                ⏸️ Em intervalo: <span id="tempoIntervaloDisplay">00:00:00</span>
                             </div>
                         </div>
                     </div>
@@ -1322,6 +1342,70 @@
                     <button class="btn btn-secondary" onclick="exportarHistorico()" style="margin-top: 12px;">📜 Baixar HISTORICO.csv</button>
                 </div>
             </div>
+            
+            <!-- LEMBRETES -->
+            <div id="lembretes" class="section">
+                <div class="card">
+                    <div class="card-title">📌 LEMBRETES E ANOTAÇÕES</div>
+                    <div style="margin-bottom: 20px;">
+                        <form id="lembreteForm">
+                            <div class="form-group">
+                                <label class="form-label">Título do Lembrete</label>
+                                <input type="text" class="form-input" id="lembreteTitulo" placeholder="Ex: Revisar vias de acesso do cotovelo" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Descrição (opcional)</label>
+                                <textarea class="form-input" id="lembreteDescricao" rows="3" placeholder="Detalhes adicionais..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Periodicidade</label>
+                                <select class="form-select" id="lembretePeriodicidade" required>
+                                    <option value="pontual">Pontual (apenas uma vez)</option>
+                                    <option value="diaria">Diária</option>
+                                    <option value="semanal">Semanal</option>
+                                    <option value="quinzenal">Quinzenal (15 dias)</option>
+                                    <option value="mensal">Mensal</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Vincular ao Tema (opcional)</label>
+                                <select class="form-select" id="lembreteTemaId">
+                                    <option value="">Nenhum (lembrete geral)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Data Inicial</label>
+                                <input type="date" class="form-input" id="lembreteDataInicial" required>
+                            </div>
+                            <button type="submit" class="btn">➕ Adicionar Lembrete</button>
+                        </form>
+                    </div>
+                    <div id="lembretesContainer"></div>
+                </div>
+            </div>
+            
+            <!-- CADERNO -->
+            <div id="caderno" class="section">
+                <div class="card">
+                    <div class="card-title">📔 CADERNO DE ANOTAÇÕES</div>
+                    <div style="margin-bottom: 20px;">
+                        <div class="form-group">
+                            <label class="form-label">Filtrar por Área</label>
+                            <select class="form-select" id="cadernoFiltroArea" onchange="atualizarSelectTemaPorArea(); filtrarCaderno();">
+                                <option value="">Todas as áreas</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Filtrar por Tema</label>
+                            <select class="form-select" id="cadernoFiltroTema" onchange="filtrarCaderno()">
+                                <option value="">Todos os temas</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="cadernoContainer"></div>
+                </div>
+            </div>
+            
         </div>
     </div>
 
@@ -1330,6 +1414,8 @@
         // ==================== DADOS E INICIALIZAÇÃO ====================
         let dados = JSON.parse(localStorage.getItem('vrvs_dados') || '[]');
         let historico = JSON.parse(localStorage.getItem('vrvs_historico') || '[]');
+        let lembretes = JSON.parse(localStorage.getItem('vrvs_lembretes') || '[]');
+        let anotacoes = JSON.parse(localStorage.getItem('vrvs_anotacoes') || '[]'); // Anotações por tema
         
         // Limpar dados corrompidos
         function limparDadosCorretos() {
@@ -1457,6 +1543,11 @@
         }
         
         function calcularProximaRevisao(tema, dataSessao = null) {
+            // CORREÇÃO: Concluído não entra no algoritmo - retornar vazio
+            if (tema.status === 'Concluído') {
+                return '';
+            }
+            
             // CORREÇÃO: Usar data da sessão se fornecida, senão usar data atual
             const dataBase = dataSessao ? new Date(dataSessao + 'T00:00:00') : new Date();
             dataBase.setHours(0, 0, 0, 0);
@@ -1630,7 +1721,9 @@
             
             const agendadas = dados
                 .filter(t => {
-                    if (!t.agenda || t.status === 'Concluído') return false;
+                    if (!t.agenda) return false;
+                    // CORREÇÃO: Concluído e Suspenso não aparecem na agenda
+                    if (t.status === 'Concluído' || t.status === 'Suspenso') return false;
                     if (dataFim) {
                         return t.agenda >= dataInicio && t.agenda <= dataFim;
                     }
@@ -1955,14 +2048,23 @@
         }
         
         function updateStats() {
-            document.getElementById('statTemas').textContent = dados.length;
-            const totalSessoes = historico.length;
+            // CORREÇÃO: Suspenso não aparece em estatísticas
+            const temasAtivos = dados.filter(t => t.status !== 'Suspenso');
+            document.getElementById('statTemas').textContent = temasAtivos.length;
+            
+            // Filtrar histórico de temas suspensos
+            const historicoAtivo = historico.filter(h => {
+                const tema = dados.find(t => String(t.id) === String(h.temaId));
+                return tema && tema.status !== 'Suspenso';
+            });
+            
+            const totalSessoes = historicoAtivo.length;
             document.getElementById('statSessoes').textContent = totalSessoes;
             const rendimentoMedio = totalSessoes > 0 
-                ? Math.round((historico.reduce((sum, h) => sum + (h.rendimento || 0), 0) / totalSessoes) * 100)
+                ? Math.round((historicoAtivo.reduce((sum, h) => sum + (h.rendimento || 0), 0) / totalSessoes) * 100)
                 : 0;
             document.getElementById('statRendimento').textContent = rendimentoMedio + '%';
-            const totalMinutos = historico.reduce((sum, h) => sum + (h.tempo || 0), 0);
+            const totalMinutos = historicoAtivo.reduce((sum, h) => sum + (h.tempo || 0), 0);
             const totalHoras = Math.round(totalMinutos / 60);
             document.getElementById('statTempo').textContent = totalHoras + 'h';
             
@@ -2001,8 +2103,14 @@
             const areaStats = {};
             historico.forEach(h => {
                 if (!h.rendimento) return;
+                // CORREÇÃO: Filtrar histórico de temas Suspensos
+                const tema = dados.find(t => String(t.id) === String(h.temaId));
+                if (tema && tema.status === 'Suspenso') return;
+                
                 const { area: areaNormalizada } = fixAreaTema(h.area, h.tema);
                 if (!areaNormalizada || areaNormalizada.trim() === '') return;
+                // CORREÇÃO: Filtrar "Tema" que é erro de importação
+                if (areaNormalizada.toLowerCase() === 'tema') return;
                 
                 if (!areaStats[areaNormalizada]) {
                     areaStats[areaNormalizada] = { total: 0, count: 0 };
@@ -2079,8 +2187,14 @@
             // AGRUPAR POR ÁREA!!!
             const areasSessoes = {};
             historico.forEach(h => {
+                // CORREÇÃO: Filtrar histórico de temas Suspensos
+                const tema = dados.find(t => String(t.id) === String(h.temaId));
+                if (tema && tema.status === 'Suspenso') return;
+                
                 const { area } = fixAreaTema(h.area, h.tema);
                 if (!area) return;
+                // CORREÇÃO: Filtrar "Tema" que é erro de importação
+                if (area.toLowerCase() === 'tema') return;
                 
                 if (!areasSessoes[area]) {
                     areasSessoes[area] = [];
@@ -2181,8 +2295,14 @@
             const areaStats = {};
             historico.forEach(h => {
                 if (!h.rendimento) return;
+                // CORREÇÃO: Filtrar histórico de temas Suspensos
+                const tema = dados.find(t => String(t.id) === String(h.temaId));
+                if (tema && tema.status === 'Suspenso') return;
+                
                 const { area } = fixAreaTema(h.area, h.tema);
                 if (!area) return;
+                // CORREÇÃO: Filtrar "Tema" que é erro de importação
+                if (area.toLowerCase() === 'tema') return;
                 
                 if (!areaStats[area]) {
                     areaStats[area] = { total: 0, count: 0 };
@@ -2534,6 +2654,14 @@
             if (sectionId === 'stats') updateStats();
             if (sectionId === 'historico') renderHistorico();
             if (sectionId === 'pendencias') renderPendencias();
+            if (sectionId === 'lembretes') {
+                atualizarSelectsLembrete();
+                renderLembretes();
+            }
+            if (sectionId === 'caderno') {
+                atualizarSelectsCaderno();
+                renderCaderno();
+            }
         }
         
         // ==================== CRONÔMETRO DA SESSÃO ====================
@@ -2541,6 +2669,10 @@
         let cronometroInterval = null;
         let cronometroSegundos = 0;
         let cronometroRodando = false;
+        let intervaloAtivo = false;
+        let intervaloSegundos = 0;
+        let intervaloInterval = null;
+        let tempoTotalIntervalo = 0; // Tempo total de intervalo acumulado (não conta no estudo)
         
         function formatarTempoCronometro(segundos) {
             const horas = Math.floor(segundos / 3600);
@@ -2551,9 +2683,21 @@
         
         function atualizarDisplayCronometro() {
             document.getElementById('cronometroDisplay').textContent = formatarTempoCronometro(cronometroSegundos);
+            // Atualizar display de tempo total de intervalo acumulado
+            if (tempoTotalIntervalo > 0) {
+                document.getElementById('tempoIntervaloTotal').style.display = 'block';
+                document.getElementById('tempoIntervaloTotalDisplay').textContent = formatarTempoCronometro(tempoTotalIntervalo);
+            } else {
+                document.getElementById('tempoIntervaloTotal').style.display = 'none';
+            }
         }
         
         function toggleCronometro() {
+            if (intervaloAtivo) {
+                mostrarNotificacaoFeedback('⚠️ Termine o intervalo primeiro!', 'error');
+                return;
+            }
+            
             if (cronometroRodando) {
                 // Pausar
                 clearInterval(cronometroInterval);
@@ -2571,19 +2715,458 @@
             }
         }
         
+        function pausarCronometro() {
+            if (cronometroRodando) {
+                toggleCronometro();
+            }
+        }
+        
+        function iniciarIntervalo() {
+            if (!cronometroRodando && cronometroSegundos === 0) {
+                mostrarNotificacaoFeedback('⚠️ Inicie o cronômetro primeiro!', 'error');
+                return;
+            }
+            
+            if (intervaloAtivo) {
+                // Finalizar intervalo - acumular tempo de intervalo
+                clearInterval(intervaloInterval);
+                intervaloInterval = null;
+                tempoTotalIntervalo += intervaloSegundos; // Acumular tempo de intervalo
+                intervaloAtivo = false;
+                intervaloSegundos = 0;
+                document.getElementById('cronometroIntervalo').textContent = '⏸️ Intervalo';
+                document.getElementById('tempoIntervalo').style.display = 'none';
+                atualizarDisplayCronometro(); // Atualizar display com tempo acumulado
+                mostrarNotificacaoFeedback(`✅ Intervalo finalizado (${formatarTempoCronometro(tempoTotalIntervalo)} total)`);
+            } else {
+                // Iniciar intervalo (pausa o cronômetro mas não conta)
+                intervaloAtivo = true;
+                intervaloSegundos = 0;
+                document.getElementById('cronometroIntervalo').textContent = '▶️ Finalizar Intervalo';
+                document.getElementById('tempoIntervalo').style.display = 'block';
+                
+                intervaloInterval = setInterval(() => {
+                    intervaloSegundos++;
+                    document.getElementById('tempoIntervaloDisplay').textContent = formatarTempoCronometro(intervaloSegundos);
+                }, 1000);
+                
+                // Pausar cronômetro durante intervalo
+                if (cronometroRodando) {
+                    clearInterval(cronometroInterval);
+                    cronometroInterval = null;
+                    cronometroRodando = false;
+                    document.getElementById('cronometroToggle').textContent = '⏱️ Iniciar Cronômetro';
+                }
+            }
+        }
+        
         function resetCronometro() {
             if (cronometroInterval) {
                 clearInterval(cronometroInterval);
                 cronometroInterval = null;
             }
+            if (intervaloInterval) {
+                clearInterval(intervaloInterval);
+                intervaloInterval = null;
+            }
             cronometroRodando = false;
+            intervaloAtivo = false;
             cronometroSegundos = 0;
+            intervaloSegundos = 0;
+            tempoTotalIntervalo = 0; // Resetar tempo total de intervalo
             atualizarDisplayCronometro();
             document.getElementById('cronometroToggle').textContent = '⏱️ Iniciar Cronômetro';
+            document.getElementById('cronometroIntervalo').textContent = '⏸️ Intervalo';
+            document.getElementById('tempoIntervalo').style.display = 'none';
         }
         
         function obterTempoCronometroMinutos() {
             return Math.floor(cronometroSegundos / 60);
+        }
+        
+        function obterTempoIntervaloMinutos() {
+            return Math.floor(tempoTotalIntervalo / 60);
+        }
+        
+        // ==================== LEMBRETES E ANOTAÇÕES ====================
+        
+        function calcularProximaDataLembrete(lembrete) {
+            if (lembrete.periodicidade === 'pontual') {
+                return null; // Não tem próxima data
+            }
+            
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            const dataInicial = new Date(lembrete.dataInicial + 'T00:00:00');
+            const ultimaData = lembrete.ultimaData ? new Date(lembrete.ultimaData + 'T00:00:00') : dataInicial;
+            
+            let proximaData = new Date(ultimaData);
+            
+            switch(lembrete.periodicidade) {
+                case 'diaria':
+                    proximaData.setDate(proximaData.getDate() + 1);
+                    break;
+                case 'semanal':
+                    proximaData.setDate(proximaData.getDate() + 7);
+                    break;
+                case 'quinzenal':
+                    proximaData.setDate(proximaData.getDate() + 15);
+                    break;
+                case 'mensal':
+                    proximaData.setMonth(proximaData.getMonth() + 1);
+                    break;
+            }
+            
+            return proximaData.toISOString().split('T')[0];
+        }
+        
+        function renderLembretes() {
+            const container = document.getElementById('lembretesContainer');
+            if (!container) return;
+            
+            const hoje = new Date().toISOString().split('T')[0];
+            
+            // Separar lembretes ativos e concluídos
+            const lembretesAtivos = lembretes.filter(l => !l.concluido && (!l.proximaData || l.proximaData <= hoje));
+            const lembretesFuturos = lembretes.filter(l => !l.concluido && l.proximaData && l.proximaData > hoje);
+            const lembretesConcluidos = lembretes.filter(l => l.concluido);
+            
+            if (lembretes.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">📌</div><div>Nenhum lembrete cadastrado</div></div>';
+                return;
+            }
+            
+            let html = '';
+            
+            // Lembretes ativos (para hoje)
+            if (lembretesAtivos.length > 0) {
+                html += '<div style="margin-bottom: 20px;"><h3 style="color: var(--turquesa-light); margin-bottom: 10px;">📌 Para Hoje</h3>';
+                html += lembretesAtivos.map(l => {
+                    const proximaDataFormatada = l.proximaData ? formatarData(l.proximaData) : 'Pontual';
+                    const tema = l.temaId ? dados.find(t => String(t.id) === String(l.temaId)) : null;
+                    const temaInfo = tema ? ` • 🔗 ${tema.area} - ${tema.tema}` : '';
+                    return `
+                        <div class="task-item" style="margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; color: var(--cobre-light); margin-bottom: 5px;">
+                                        ${l.temaId ? `<a href="#" onclick="navegarParaAnotacao(${l.temaId}); return false;" style="color: var(--turquesa-light); text-decoration: none;">📔</a> ` : ''}${l.titulo}
+                                    </div>
+                                    ${l.descricao ? `<div style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">${l.descricao}</div>` : ''}
+                                    <div style="font-size: 11px; color: rgba(0,206,209,0.6);">
+                                        📅 ${proximaDataFormatada} • ${l.periodicidade === 'pontual' ? 'Pontual' : l.periodicidade.charAt(0).toUpperCase() + l.periodicidade.slice(1)}${temaInfo}
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 5px;">
+                                    ${l.periodicidade !== 'pontual' ? `<button class="btn-edit" onclick="marcarLembreteConcluido(${l.id})" title="Marcar como concluído">✅</button>` : ''}
+                                    ${l.temaId ? `<button class="btn-edit" onclick="navegarParaAnotacao(${l.temaId})" title="Ver anotações">📔</button>` : ''}
+                                    <button class="btn-edit" onclick="deletarLembrete(${l.id})" title="Deletar">🗑️</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                html += '</div>';
+            }
+            
+            // Lembretes futuros
+            if (lembretesFuturos.length > 0) {
+                html += '<div style="margin-bottom: 20px;"><h3 style="color: rgba(0,206,209,0.7); margin-bottom: 10px;">📅 Próximos</h3>';
+                html += lembretesFuturos.map(l => {
+                    const proximaDataFormatada = formatarData(l.proximaData);
+                    const tema = l.temaId ? dados.find(t => String(t.id) === String(l.temaId)) : null;
+                    const temaInfo = tema ? ` • 🔗 ${tema.area} - ${tema.tema}` : '';
+                    return `
+                        <div class="task-item" style="margin-bottom: 10px; opacity: 0.7;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; color: var(--cobre-light); margin-bottom: 5px;">
+                                        ${l.temaId ? `<a href="#" onclick="navegarParaAnotacao(${l.temaId}); return false;" style="color: var(--turquesa-light); text-decoration: none;">📔</a> ` : ''}${l.titulo}
+                                    </div>
+                                    ${l.descricao ? `<div style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">${l.descricao}</div>` : ''}
+                                    <div style="font-size: 11px; color: rgba(0,206,209,0.6);">
+                                        📅 ${proximaDataFormatada} • ${l.periodicidade.charAt(0).toUpperCase() + l.periodicidade.slice(1)}${temaInfo}
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 5px;">
+                                    ${l.temaId ? `<button class="btn-edit" onclick="navegarParaAnotacao(${l.temaId})" title="Ver anotações">📔</button>` : ''}
+                                    <button class="btn-edit" onclick="deletarLembrete(${l.id})" title="Deletar">🗑️</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                html += '</div>';
+            }
+            
+            // Lembretes concluídos (opcional, pode ser ocultado)
+            if (lembretesConcluidos.length > 0 && false) { // Desabilitado por enquanto
+                html += '<div><h3 style="color: rgba(255,255,255,0.3); margin-bottom: 10px;">✅ Concluídos</h3>';
+                html += lembretesConcluidos.map(l => {
+                    return `
+                        <div class="task-item" style="margin-bottom: 10px; opacity: 0.5;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <div style="flex: 1;">
+                                    <div style="text-decoration: line-through; color: rgba(255,255,255,0.3);">${l.titulo}</div>
+                                </div>
+                                <button class="btn-edit" onclick="deletarLembrete(${l.id})" title="Deletar">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                html += '</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function marcarLembreteConcluido(id) {
+            const lembrete = lembretes.find(l => l.id === id);
+            if (!lembrete) return;
+            
+            if (lembrete.periodicidade === 'pontual') {
+                lembrete.concluido = true;
+            } else {
+                // Atualizar última data e calcular próxima
+                const hoje = new Date().toISOString().split('T')[0];
+                lembrete.ultimaData = hoje;
+                lembrete.proximaData = calcularProximaDataLembrete(lembrete);
+            }
+            
+            localStorage.setItem('vrvs_lembretes', JSON.stringify(lembretes));
+            renderLembretes();
+            mostrarNotificacaoFeedback('✅ Lembrete atualizado!');
+        }
+        
+        function deletarLembrete(id) {
+            if (!confirm('Tem certeza que deseja deletar este lembrete?')) return;
+            
+            lembretes = lembretes.filter(l => l.id !== id);
+            localStorage.setItem('vrvs_lembretes', JSON.stringify(lembretes));
+            renderLembretes();
+            mostrarNotificacaoFeedback('🗑️ Lembrete deletado!');
+        }
+        
+        // ==================== CADERNO DE ANOTAÇÕES ====================
+        
+        function obterOuCriarAnotacao(temaId) {
+            let anotacao = anotacoes.find(a => String(a.temaId) === String(temaId));
+            if (!anotacao) {
+                const tema = dados.find(t => String(t.id) === String(temaId));
+                if (!tema) return null;
+                
+                anotacao = {
+                    id: Date.now(),
+                    temaId: temaId,
+                    area: tema.area,
+                    tema: tema.tema,
+                    conteudo: '',
+                    ultimaAtualizacao: new Date().toISOString().split('T')[0]
+                };
+                anotacoes.push(anotacao);
+                localStorage.setItem('vrvs_anotacoes', JSON.stringify(anotacoes));
+            }
+            return anotacao;
+        }
+        
+        function navegarParaAnotacao(temaId) {
+            // Criar anotação se não existir
+            obterOuCriarAnotacao(temaId);
+            
+            // Filtrar caderno para mostrar apenas este tema
+            document.getElementById('cadernoFiltroArea').value = '';
+            document.getElementById('cadernoFiltroTema').value = String(temaId);
+            
+            // Mostrar seção caderno
+            showSection('caderno');
+            
+            // Scroll para anotação
+            setTimeout(() => {
+                const elemento = document.querySelector(`[data-tema-id="${temaId}"]`);
+                if (elemento) {
+                    elemento.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    elemento.style.background = 'rgba(0,206,209,0.2)';
+                    setTimeout(() => {
+                        elemento.style.background = '';
+                    }, 2000);
+                }
+            }, 100);
+        }
+        
+        function atualizarSelectsLembrete() {
+            const select = document.getElementById('lembreteTemaId');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">Nenhum (lembrete geral)</option>';
+            
+            dados.forEach(t => {
+                const option = document.createElement('option');
+                option.value = t.id;
+                option.textContent = `${t.area} - ${t.tema}`;
+                select.appendChild(option);
+            });
+        }
+        
+        function atualizarSelectsCaderno() {
+            const selectArea = document.getElementById('cadernoFiltroArea');
+            const selectTema = document.getElementById('cadernoFiltroTema');
+            
+            if (selectArea) {
+                const areas = [...new Set(dados.map(t => t.area))].sort();
+                selectArea.innerHTML = '<option value="">Todas as áreas</option>';
+                areas.forEach(area => {
+                    const option = document.createElement('option');
+                    option.value = area;
+                    option.textContent = area;
+                    selectArea.appendChild(option);
+                });
+            }
+            
+            atualizarSelectTemaPorArea();
+        }
+        
+        function atualizarSelectTemaPorArea() {
+            const selectTema = document.getElementById('cadernoFiltroTema');
+            const filtroArea = document.getElementById('cadernoFiltroArea')?.value || '';
+            
+            if (!selectTema) return;
+            
+            selectTema.innerHTML = '<option value="">Todos os temas</option>';
+            
+            let temasFiltrados = dados;
+            if (filtroArea) {
+                temasFiltrados = dados.filter(t => t.area === filtroArea);
+            }
+            
+            temasFiltrados.forEach(t => {
+                const option = document.createElement('option');
+                option.value = t.id;
+                option.textContent = `${t.area} - ${t.tema}`;
+                selectTema.appendChild(option);
+            });
+        }
+        
+        function filtrarCaderno() {
+            const filtroArea = document.getElementById('cadernoFiltroArea')?.value || '';
+            const filtroTema = document.getElementById('cadernoFiltroTema')?.value || '';
+            
+            renderCaderno(filtroArea, filtroTema);
+        }
+        
+        function renderCaderno(filtroArea = '', filtroTema = '') {
+            const container = document.getElementById('cadernoContainer');
+            if (!container) return;
+            
+            // Garantir que todos os temas tenham anotação
+            dados.forEach(t => {
+                obterOuCriarAnotacao(t.id);
+            });
+            
+            let anotacoesFiltradas = anotacoes;
+            
+            if (filtroArea) {
+                anotacoesFiltradas = anotacoesFiltradas.filter(a => a.area === filtroArea);
+            }
+            
+            if (filtroTema) {
+                anotacoesFiltradas = anotacoesFiltradas.filter(a => String(a.temaId) === String(filtroTema));
+            }
+            
+            // Agrupar por área
+            const anotacoesPorArea = {};
+            anotacoesFiltradas.forEach(a => {
+                if (!anotacoesPorArea[a.area]) {
+                    anotacoesPorArea[a.area] = [];
+                }
+                anotacoesPorArea[a.area].push(a);
+            });
+            
+            if (anotacoesFiltradas.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">📔</div><div>Nenhuma anotação encontrada</div></div>';
+                return;
+            }
+            
+            let html = '';
+            
+            Object.keys(anotacoesPorArea).sort().forEach(area => {
+                html += `<div style="margin-bottom: 30px;">`;
+                html += `<h3 style="color: var(--turquesa-light); margin-bottom: 15px; font-size: 18px;">📚 ${area}</h3>`;
+                
+                anotacoesPorArea[area].forEach(anotacao => {
+                    const tema = dados.find(t => String(t.id) === String(anotacao.temaId));
+                    if (!tema) return;
+                    
+                    html += `
+                        <div class="task-item" style="margin-bottom: 20px;" data-tema-id="${anotacao.temaId}">
+                            <div style="margin-bottom: 10px;">
+                                <div style="font-weight: 600; color: var(--cobre-light); margin-bottom: 5px;">
+                                    📝 ${anotacao.tema}
+                                </div>
+                                <div style="font-size: 11px; color: rgba(0,206,209,0.6); margin-bottom: 10px;">
+                                    Última atualização: ${formatarData(anotacao.ultimaAtualizacao)}
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <textarea 
+                                    id="anotacao_${anotacao.temaId}" 
+                                    class="form-input" 
+                                    rows="6" 
+                                    style="width: 100%; font-family: inherit; resize: vertical;"
+                                    placeholder="Digite suas anotações aqui..."
+                                    onblur="salvarAnotacao(${anotacao.temaId})"
+                                >${anotacao.conteudo || ''}</textarea>
+                            </div>
+                            <div style="display: flex; gap: 5px;">
+                                <button class="btn-edit" onclick="salvarAnotacao(${anotacao.temaId})" title="Salvar">💾</button>
+                                <button class="btn-edit" onclick="limparAnotacao(${anotacao.temaId})" title="Limpar">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function salvarAnotacao(temaId) {
+            const textarea = document.getElementById(`anotacao_${temaId}`);
+            if (!textarea) return;
+            
+            const anotacao = obterOuCriarAnotacao(temaId);
+            if (!anotacao) return;
+            
+            anotacao.conteudo = textarea.value.trim();
+            anotacao.ultimaAtualizacao = new Date().toISOString().split('T')[0];
+            
+            localStorage.setItem('vrvs_anotacoes', JSON.stringify(anotacoes));
+            mostrarNotificacaoFeedback('✅ Anotação salva!');
+            
+            // Atualizar renderização
+            const filtroArea = document.getElementById('cadernoFiltroArea')?.value || '';
+            const filtroTema = document.getElementById('cadernoFiltroTema')?.value || '';
+            renderCaderno(filtroArea, filtroTema);
+        }
+        
+        function limparAnotacao(temaId) {
+            if (!confirm('Tem certeza que deseja limpar esta anotação?')) return;
+            
+            const anotacao = anotacoes.find(a => String(a.temaId) === String(temaId));
+            if (anotacao) {
+                anotacao.conteudo = '';
+                anotacao.ultimaAtualizacao = new Date().toISOString().split('T')[0];
+                localStorage.setItem('vrvs_anotacoes', JSON.stringify(anotacoes));
+                
+                const textarea = document.getElementById(`anotacao_${temaId}`);
+                if (textarea) textarea.value = '';
+                
+                mostrarNotificacaoFeedback('🗑️ Anotação limpa!');
+                
+                const filtroArea = document.getElementById('cadernoFiltroArea')?.value || '';
+                const filtroTema = document.getElementById('cadernoFiltroTema')?.value || '';
+                renderCaderno(filtroArea, filtroTema);
+            }
         }
         
         // ==================== INICIALIZAÇÃO ====================
@@ -2613,6 +3196,9 @@
             // Inicializar campo de data com hoje
             document.getElementById('feedbackData').value = new Date().toISOString().split('T')[0];
             
+            // Inicializar data inicial do lembrete com hoje
+            document.getElementById('lembreteDataInicial').value = new Date().toISOString().split('T')[0];
+            
             // Event listeners para filtros de agenda
             document.getElementById('agendaDataInicio').addEventListener('change', renderAgenda);
             document.getElementById('agendaDataFim').addEventListener('change', renderAgenda);
@@ -2623,13 +3209,14 @@
                 const area = document.getElementById('novaArea').value.trim();
                 const tema = document.getElementById('novoTema').value.trim();
                 const prioridade = parseInt(document.getElementById('novaPrioridade').value);
+                const status = document.getElementById('novaStatus').value;
                 const dataInicio = document.getElementById('novaDataInicio').value;
                 
                 const novoTema = {
                     id: Date.now(),
                     area: normalizeArea(area, tema),
                     tema: tema,
-                    status: 'Planejado',
+                    status: status,
                     prioridade: prioridade,
                     dificuldade: 'Média',
                     rendimento: 0,
@@ -2666,6 +3253,7 @@
                 const tempoInput = document.getElementById('feedbackTempo');
                 // Usar tempo do cronômetro se disponível, senão usar o input
                 const tempo = cronometroSegundos > 0 ? obterTempoCronometroMinutos() : (parseInt(tempoInput.value) || 0);
+                const tempoIntervalo = obterTempoIntervaloMinutos(); // Tempo de intervalo em minutos
                 // Se usar cronômetro, atualizar o campo de input também
                 if (cronometroSegundos > 0) {
                     tempoInput.value = tempo;
@@ -2719,6 +3307,7 @@
                     tema: temaCorrigido,
                     rendimento: rendimento / 100,
                     tempo: tempo,
+                    tempoIntervalo: tempoIntervalo, // Tempo de intervalo em minutos (para estatísticas futuras)
                     data: dataSessao,
                     observacoes: obs || '-',
                     sugestao: sugestao || '-'
@@ -2730,7 +3319,7 @@
                 this.reset();
                 document.getElementById('feedbackData').value = new Date().toISOString().split('T')[0];
                 
-                // Resetar cronômetro após salvar
+                // Resetar cronômetro após salvar (incluindo tempo de intervalo)
                 resetCronometro();
                 
                 // NOTIFICAÇÃO DE SUCESSO!
@@ -2759,11 +3348,17 @@
                 tema.area = normalizeArea(document.getElementById('editArea').value.trim());
                 tema.tema = document.getElementById('editTema').value.trim();
                 tema.prioridade = parseInt(document.getElementById('editPrioridade').value);
-                tema.status = document.getElementById('editStatus').value;
+                const novoStatus = document.getElementById('editStatus').value;
+                tema.status = novoStatus;
                 
-                // Recalcular agenda se necessário
-                if (tema.sessoes > 0) {
-                    tema.agenda = calcularProximaRevisao(tema);
+                // CORREÇÃO: Se mudou para Concluído ou Suspenso, limpar agenda
+                if (novoStatus === 'Concluído' || novoStatus === 'Suspenso') {
+                    tema.agenda = '';
+                } else {
+                    // Recalcular agenda se necessário
+                    if (tema.sessoes > 0) {
+                        tema.agenda = calcularProximaRevisao(tema);
+                    }
                 }
                 
                 localStorage.setItem('vrvs_dados', JSON.stringify(dados));
@@ -2778,6 +3373,43 @@
                 updateFeedbackSelect();
             };
             
+            // LEMBRETE FORM
+            document.getElementById('lembreteForm').onsubmit = function(e) {
+                e.preventDefault();
+                const titulo = document.getElementById('lembreteTitulo').value.trim();
+                const descricao = document.getElementById('lembreteDescricao').value.trim();
+                const periodicidade = document.getElementById('lembretePeriodicidade').value;
+                const temaId = document.getElementById('lembreteTemaId').value;
+                const dataInicial = document.getElementById('lembreteDataInicial').value;
+                
+                const novoLembrete = {
+                    id: Date.now(),
+                    titulo: titulo,
+                    descricao: descricao || '',
+                    periodicidade: periodicidade,
+                    temaId: temaId || null,
+                    dataInicial: dataInicial,
+                    proximaData: periodicidade === 'pontual' ? dataInicial : calcularProximaDataLembrete({
+                        periodicidade: periodicidade,
+                        dataInicial: dataInicial,
+                        ultimaData: null
+                    }),
+                    ultimaData: null,
+                    concluido: false
+                };
+                
+                lembretes.push(novoLembrete);
+                localStorage.setItem('vrvs_lembretes', JSON.stringify(lembretes));
+                
+                mostrarNotificacaoFeedback('✅ Lembrete adicionado com sucesso!');
+                
+                // Limpar formulário
+                this.reset();
+                document.getElementById('lembreteDataInicial').value = new Date().toISOString().split('T')[0];
+                
+                renderLembretes();
+            };
+            
             // Inicializações
             renderTarefas();
             renderAgenda();
@@ -2786,6 +3418,10 @@
             updateFeedbackSelect();
             updateStats();
             renderHistorico();
+            atualizarSelectsLembrete();
+            renderLembretes();
+            atualizarSelectsCaderno();
+            renderCaderno();
         };
     </script>
 </body>

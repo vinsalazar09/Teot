@@ -887,9 +887,143 @@
                 var(--cobre-main)
             );
         }
+        /* ==================== SPLASH SCREEN ==================== */
+        #splashScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1a1f 0%, #051015 50%, #0a1a1f 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 1;
+            transition: opacity 0.8s ease-out;
+        }
+        
+        #splashScreen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        #splashScreen.hidden {
+            display: none;
+        }
+        
+        .splash-logo {
+            width: 200px;
+            height: 200px;
+            margin-bottom: 30px;
+            animation: logoFloat 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(0, 255, 224, 0.3));
+        }
+        
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-10px) scale(1.05); }
+        }
+        
+        .splash-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--turquesa-neon);
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(0, 255, 224, 0.5);
+            animation: titlePulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes titlePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .splash-subtitle {
+            font-size: 14px;
+            color: var(--turquesa-light);
+            margin-bottom: 40px;
+            opacity: 0.8;
+        }
+        
+        .splash-loader {
+            width: 60px;
+            height: 60px;
+            position: relative;
+        }
+        
+        .splash-loader::before,
+        .splash-loader::after {
+            content: '';
+            position: absolute;
+            border: 3px solid transparent;
+            border-top-color: var(--turquesa-neon);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .splash-loader::before {
+            width: 60px;
+            height: 60px;
+            animation-duration: 1s;
+        }
+        
+        .splash-loader::after {
+            width: 40px;
+            height: 40px;
+            top: 10px;
+            left: 10px;
+            border-top-color: var(--cobre-light);
+            animation-duration: 0.8s;
+            animation-direction: reverse;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .splash-progress {
+            width: 200px;
+            height: 3px;
+            background: rgba(0, 206, 209, 0.2);
+            border-radius: 10px;
+            margin-top: 30px;
+            overflow: hidden;
+        }
+        
+        .splash-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--turquesa-neon), var(--cobre-light));
+            border-radius: 10px;
+            width: 0%;
+            animation: progressLoad 2s ease-out forwards;
+            box-shadow: 0 0 10px rgba(0, 255, 224, 0.6);
+        }
+        
+        @keyframes progressLoad {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        
+        body.splash-loading {
+            overflow: hidden;
+        }
     </style>
 </head>
-<body>
+<body class="splash-loading">
+    <!-- SPLASH SCREEN -->
+    <div id="splashScreen">
+        <img src="logo.png" alt="VRVS Logo" class="splash-logo">
+        <div class="splash-title">VRVS</div>
+        <div class="splash-subtitle">Sistema de Revisão e Performance</div>
+        <div class="splash-loader"></div>
+        <div class="splash-progress">
+            <div class="splash-progress-bar"></div>
+        </div>
+    </div>
+    
     <div id="importMessage"></div>
     <div id="feedbackMessage"></div>
     
@@ -2455,6 +2589,18 @@
         // ==================== INICIALIZAÇÃO ====================
         
         window.onload = function() {
+            // Splash Screen - Esconder após carregar
+            setTimeout(() => {
+                const splash = document.getElementById('splashScreen');
+                if (splash) {
+                    splash.classList.add('fade-out');
+                    document.body.classList.remove('splash-loading');
+                    setTimeout(() => {
+                        splash.classList.add('hidden');
+                    }, 800);
+                }
+            }, 2500); // Mostrar por 2.5 segundos
+            
             // Inicializar campo de data com hoje
             document.getElementById('feedbackData').value = new Date().toISOString().split('T')[0];
             

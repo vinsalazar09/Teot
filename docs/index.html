@@ -969,6 +969,11 @@
             <div id="agenda" class="section">
                 <div class="card">
                     <div class="card-title">📅 TIMELINE</div>
+                    <div class="date-range-controls" style="margin-bottom: 20px;">
+                        <input type="date" class="form-input" id="agendaDataInicio" style="margin-right: 10px;">
+                        <input type="date" class="form-input" id="agendaDataFim" style="margin-right: 10px;">
+                        <button class="btn btn-small" onclick="filtrarSemanaAtual()">📅 Semana Atual</button>
+                    </div>
                     <div id="agendaContainer"></div>
                 </div>
             </div>
@@ -1012,6 +1017,12 @@
                 <div class="card">
                     <div class="card-title">📝 REGISTRAR PERFORMANCE</div>
                     <form id="feedbackForm">
+                        <div class="form-group">
+                            <label class="form-label">Área</label>
+                            <select class="form-select" id="feedbackArea" required>
+                                <option value="">Selecione a área...</option>
+                            </select>
+                        </div>
                         <div class="form-group">
                             <label class="form-label">Módulo Estudado</label>
                             <select class="form-select" id="feedbackTema" required>
@@ -1262,6 +1273,37 @@
             return area.replace(/\b\w/g, m => m.toUpperCase());
         }
         
+        function fixAreaTema(area, tema) {
+            if (!area || !tema) return { area: area || '', tema: tema || '' };
+            
+            // Verificar se área e tema estão invertidos
+            // Se o "tema" parece ser uma área (contém palavras-chave de área)
+            const areaKeywords = ['trauma', 'ombro', 'cotovelo', 'mão', 'punho', 'joelho', 'quadril', 'pelve', 'pé', 'tornozelo', 'coluna', 'oncologia', 'tumores'];
+            const temaLower = String(tema).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            
+            // Se tema contém palavras-chave de área e área não, provavelmente estão invertidos
+            const temaEhArea = areaKeywords.some(keyword => temaLower.includes(keyword));
+            const areaEhArea = areaKeywords.some(keyword => String(area).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(keyword));
+            
+            if (temaEhArea && !areaEhArea) {
+                // Estão invertidos, trocar
+                return { area: normalizeArea(tema, ''), tema: area };
+            }
+            
+            return { area: normalizeArea(area, tema), tema: tema };
+        }
+        
+        function formatarData(dataStr) {
+            if (!dataStr || dataStr === '-' || dataStr.trim() === '') return '-';
+            try {
+                const data = new Date(dataStr + 'T00:00:00');
+                if (isNaN(data.getTime())) return '-';
+                return data.toLocaleDateString('pt-BR');
+            } catch (e) {
+                return '-';
+            }
+        }
+        
         function calcularProximaRevisao(tema) {
             const hoje = new Date();
             hoje.setHours(0, 0, 0, 0);
@@ -1373,14 +1415,11 @@
         
         function renderTarefas() {
             const hoje = new Date().toISOString().split('T')[0];
-            const seteDias = new Date();
-            seteDias.setDate(seteDias.getDate() + 7);
-            const seteDiasStr = seteDias.toISOString().split('T')[0];
             
             const tarefas = dados.filter(t => {
                 if (!t.agenda || !t.tema) return false;
                 if (t.status !== 'Em estudo' && t.status !== 'Planejado') return false;
-                return t.agenda >= hoje && t.agenda <= seteDiasStr;
+                return t.agenda <= hoje;
             });
             
             const container = document.getElementById('tarefasContainer');
@@ -1410,7 +1449,7 @@
                         <div class="task-detail-item">⭐ Prior: ${t.prioridade || 3}</div>
                         <div class="task-detail-item" style="color: ${rendColor};">📊 ${rendPct}%</div>
                         <div class="task-detail-item">📢 ${t.sessoes || 0} sessões</div>
-                        <div class="task-detail-item">📅 ${new Date(t.agenda + 'T00:00:00').toLocaleDateString('pt-BR')}</div>
+                        <div class="task-detail-item">📅 ${formatarData(t.agenda)}</div>
                     </div>
                     
                     ${tipo ? `<div class="task-tipo">${tipo}</div>` : ''}
@@ -1428,8 +1467,17 @@
         
         function renderAgenda() {
             const hoje = new Date().toISOString().split('T')[0];
+            const dataInicio = document.getElementById('agendaDataInicio').value || hoje;
+            const dataFim = document.getElementById('agendaDataFim').value || '';
+            
             const agendadas = dados
-                .filter(t => t.agenda && t.agenda >= hoje && t.status !== 'Concluído')
+                .filter(t => {
+                    if (!t.agenda || t.status === 'Concluído') return false;
+                    if (dataFim) {
+                        return t.agenda >= dataInicio && t.agenda <= dataFim;
+                    }
+                    return t.agenda >= dataInicio;
+                })
                 .sort((a, b) => a.agenda.localeCompare(b.agenda));
             
             const container = document.getElementById('agendaContainer');
@@ -1442,7 +1490,7 @@
                 const sugestao = obterSugestaoTema(t);
                 const rendPct = Math.round((t.rendimento || 0) * 100);
                 const rendColor = rendPct >= 80 ? '#00FFE0' : rendPct >= 50 ? '#FFA366' : '#EF4444';
-                const dataFormatada = new Date(t.agenda + 'T00:00:00').toLocaleDateString('pt-BR');
+                const dataFormatada = formatarData(t.agenda);
                 const tipo = calcularTipoRevisao(t);
                 
                 return `
@@ -1472,11 +1520,23 @@
             }).join('');
         }
         
+        function filtrarSemanaAtual() {
+            const hoje = new Date();
+            const inicioSemana = new Date(hoje);
+            inicioSemana.setDate(hoje.getDate() - hoje.getDay());
+            const fimSemana = new Date(inicioSemana);
+            fimSemana.setDate(inicioSemana.getDate() + 6);
+            
+            document.getElementById('agendaDataInicio').value = inicioSemana.toISOString().split('T')[0];
+            document.getElementById('agendaDataFim').value = fimSemana.toISOString().split('T')[0];
+            renderAgenda();
+        }
+        
         function renderDados() {
             const tbody = document.getElementById('dadosTableBody');
             tbody.innerHTML = dados.map(t => {
-                const ultEstudo = t.ultEstudo ? new Date(t.ultEstudo + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
-                const agenda = t.agenda ? new Date(t.agenda + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+                const ultEstudo = formatarData(t.ultEstudo);
+                const agenda = formatarData(t.agenda);
                 const rend = t.rendimento ? Math.round(t.rendimento * 100) + '%' : '-';
                 const rendColor = t.rendimento >= 0.8 ? '#00FFE0' : t.rendimento >= 0.5 ? '#FFA366' : '#EF4444';
                 
@@ -1499,9 +1559,33 @@
         }
         
         function updateFeedbackSelect() {
-            const select = document.getElementById('feedbackTema');
-            select.innerHTML = '<option value="">Selecione o módulo...</option>' +
-                dados.map(t => `<option value="${t.id}">${t.tema} (${t.area})</option>`).join('');
+            const areaSelect = document.getElementById('feedbackArea');
+            const temaSelect = document.getElementById('feedbackTema');
+            
+            // Obter áreas únicas
+            const areas = [...new Set(dados.map(t => t.area).filter(a => a && a.trim()))].sort();
+            areaSelect.innerHTML = '<option value="">Selecione a área...</option>' +
+                areas.map(a => `<option value="${a}">${a}</option>`).join('');
+            
+            // Atualizar temas baseado na área selecionada
+            updateFeedbackTemaSelect();
+        }
+        
+        function updateFeedbackTemaSelect() {
+            const areaSelect = document.getElementById('feedbackArea');
+            const temaSelect = document.getElementById('feedbackTema');
+            const areaSelecionada = areaSelect.value;
+            
+            temaSelect.innerHTML = '<option value="">Selecione o módulo...</option>';
+            
+            if (!areaSelecionada) {
+                // Se nenhuma área selecionada, mostrar todos os temas
+                temaSelect.innerHTML += dados.map(t => `<option value="${t.id}">${t.tema} (${t.area})</option>`).join('');
+            } else {
+                // Filtrar temas pela área selecionada
+                const temasFiltrados = dados.filter(t => t.area === areaSelecionada);
+                temaSelect.innerHTML += temasFiltrados.map(t => `<option value="${t.id}">${t.tema}</option>`).join('');
+            }
         }
         
         function desfazerUltimoFeedback() {
@@ -1619,7 +1703,7 @@
             });
             
             tbody.innerHTML = historicoOrdenado.map(h => {
-                const data = h.data ? new Date(h.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+                const data = formatarData(h.data);
                 const rend = h.rendimento ? Math.round(h.rendimento * 100) + '%' : '-';
                 const tempo = h.tempo ? h.tempo + ' min' : '-';
                 let rendColor = '#9CA3AF';
@@ -1682,7 +1766,7 @@
             const resultado = `
                 <div style="margin-top: 20px;">
                     <h4 style="color: var(--turquesa-light); margin-bottom: 12px;">
-                        Análise: ${new Date(dataInicio).toLocaleDateString('pt-BR')} - ${new Date(dataFim).toLocaleDateString('pt-BR')}
+                        Análise: ${formatarData(dataInicio)} - ${formatarData(dataFim)}
                     </h4>
                     <div class="stats-grid">
                         <div class="stat-card">
@@ -1797,7 +1881,7 @@
             const areaStats = {};
             historico.forEach(h => {
                 if (!h.rendimento) return;
-                const areaNormalizada = normalizeArea(h.area, h.tema);
+                const { area: areaNormalizada } = fixAreaTema(h.area, h.tema);
                 if (!areaNormalizada || areaNormalizada.trim() === '') return;
                 
                 if (!areaStats[areaNormalizada]) {
@@ -1875,7 +1959,7 @@
             // AGRUPAR POR ÁREA!!!
             const areasSessoes = {};
             historico.forEach(h => {
-                const area = normalizeArea(h.area, h.tema);
+                const { area } = fixAreaTema(h.area, h.tema);
                 if (!area) return;
                 
                 if (!areasSessoes[area]) {
@@ -1977,7 +2061,7 @@
             const areaStats = {};
             historico.forEach(h => {
                 if (!h.rendimento) return;
-                const area = normalizeArea(h.area, h.tema);
+                const { area } = fixAreaTema(h.area, h.tema);
                 if (!area) return;
                 
                 if (!areaStats[area]) {
@@ -2294,9 +2378,16 @@
             if (arr.length === 0) return '';
             const headers = Object.keys(arr[0]);
             const rows = arr.map(obj => headers.map(h => {
-                const val = obj[h] || '';
-                const escaped = String(val).replace(/"/g, '""');
-                return (escaped.includes(',') || escaped.includes('\n')) ? `"${escaped}"` : escaped;
+                let val = obj[h];
+                if (val === null || val === undefined) val = '';
+                const strVal = String(val);
+                // Escapar aspas duplas
+                const escaped = strVal.replace(/"/g, '""');
+                // Se contém vírgula, quebra de linha ou aspas, precisa estar entre aspas
+                if (escaped.includes(',') || escaped.includes('\n') || escaped.includes('\r') || escaped.includes('"')) {
+                    return `"${escaped}"`;
+                }
+                return escaped;
             }).join(','));
             return [headers.join(','), ...rows].join('\n');
         }
@@ -2330,6 +2421,10 @@
         window.onload = function() {
             // Inicializar campo de data com hoje
             document.getElementById('feedbackData').value = new Date().toISOString().split('T')[0];
+            
+            // Event listeners para filtros de agenda
+            document.getElementById('agendaDataInicio').addEventListener('change', renderAgenda);
+            document.getElementById('agendaDataFim').addEventListener('change', renderAgenda);
             
             // CADASTRO FORM
             document.getElementById('cadastroForm').onsubmit = function(e) {
@@ -2366,6 +2461,7 @@
             };
             
             // FEEDBACK FORM - 100% FUNCIONANDO!
+            document.getElementById('feedbackArea').addEventListener('change', updateFeedbackTemaSelect);
             document.getElementById('feedbackForm').onsubmit = function(e) {
                 e.preventDefault();
                 const temaId = document.getElementById('feedbackTema').value;
@@ -2431,7 +2527,7 @@
                 document.getElementById('feedbackData').value = new Date().toISOString().split('T')[0];
                 
                 // NOTIFICAÇÃO DE SUCESSO!
-                const proximaData = new Date(tema.agenda + 'T00:00:00').toLocaleDateString('pt-BR');
+                const proximaData = formatarData(tema.agenda);
                 mostrarNotificacaoFeedback(`✅ Performance registrada!<br>📅 Próxima revisão: ${proximaData}`);
                 
                 renderTarefas();

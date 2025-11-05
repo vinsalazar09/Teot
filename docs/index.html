@@ -420,6 +420,46 @@
             background: rgba(255, 127, 80, 0.1);
         }
         
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            padding: 6px 10px;
+            border-radius: 8px;
+            color: #EF4444;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 5px;
+        }
+        
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #EF4444;
+            transform: scale(1.1);
+        }
+        
+        .btn-save-floating {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #00FFE0 0%, #00CED1 100%);
+            color: #0a1a1f;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 4px 20px rgba(0,206,209,0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-save-floating:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(0,206,209,0.7);
+        }
+        
         /* STATS GRID */
         .stats-grid {
             display: grid;
@@ -1027,6 +1067,11 @@
     <div id="importMessage"></div>
     <div id="feedbackMessage"></div>
     
+    <!-- Botão flutuante de salvar (sempre visível) -->
+    <button class="btn-save-floating" onclick="salvarDadosManualmente()" title="Salvar todos os dados">
+        💾 SALVAR
+    </button>
+    
     <!-- MODAL DE EDIÇÃO -->
     <div id="editModal" class="modal">
         <div class="modal-content">
@@ -1089,6 +1134,14 @@
             <div id="dados" class="section active">
                 <div class="card">
                     <div class="card-title">📊 BANCO DE DADOS</div>
+                    <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                        <button class="btn" onclick="salvarDadosManualmente()" style="background: linear-gradient(135deg, #00FFE0 0%, #00CED1 100%); color: #0a1a1f; font-weight: bold; box-shadow: 0 4px 15px rgba(0,206,209,0.4);">
+                            💾 SALVAR DADOS AGORA
+                        </button>
+                        <div style="font-size: 11px; color: rgba(0,206,209,0.7);">
+                            💡 Salva tudo automaticamente no navegador
+                        </div>
+                    </div>
                     <div style="overflow-x: auto;">
                         <table class="data-table">
                             <thead>
@@ -1837,7 +1890,7 @@
                         <td style="text-align: center; color: rgba(255,255,255,0.6); font-size: 11px;">${agenda}</td>
                         <td style="text-align: center;">
                             <button class="btn-edit" onclick="openEditModal(${t.id})" title="Editar">🔧</button>
-                            <button class="btn-edit" onclick="deletarTema(${t.id})" title="Excluir tema" style="color: #EF4444;">🗑️</button>
+                            <button class="btn-delete" onclick="deletarTema(${t.id})" title="Excluir tema permanentemente">🗑️</button>
                         </td>
                     </tr>
                 `;

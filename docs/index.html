@@ -1722,8 +1722,8 @@
                             <input type="number" class="form-input" id="feedbackRendimento" min="0" max="100" placeholder="0-100" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Duração (min)</label>
-                            <input type="number" class="form-input" id="feedbackTempo" min="0" placeholder="Minutos" required>
+                            <label class="form-label">Duração (min) <span style="font-size: 11px; color: rgba(255,255,255,0.5);">(opcional)</span></label>
+                            <input type="number" class="form-input" id="feedbackTempo" min="0" placeholder="Minutos">
                         </div>
                         
                         <!-- Boxes discretos de tempo para questões e flashcards -->
@@ -5939,10 +5939,8 @@
                         tempo = parseInt(tempoInput.value) || 0;
                     }
                     
-                    if (tempo <= 0) {
-                        mostrarNotificacaoFeedback('⚠️ Preencha a duração da sessão!', 'error');
-                        return false;
-                    }
+                    // Tempo é opcional - se não tiver preenchido, usar 0
+                    if (tempo < 0) tempo = 0;
                     
                     // Obter tempo de intervalo
                     let tempoIntervalo = 0;

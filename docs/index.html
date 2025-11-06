@@ -2529,6 +2529,74 @@
             }
         }
         
+        // Função para sincronizar dados dos temas com base no histórico
+        function sincronizarDadosDoHistorico() {
+            // Recarregar dados e histórico do localStorage
+            dados = JSON.parse(localStorage.getItem('vrvs_dados') || '[]');
+            if (Array.isArray(dados)) {
+                dados = dados.map(d => fixAreaTemaObjeto(d));
+            }
+            historico = JSON.parse(localStorage.getItem('vrvs_historico') || '[]');
+            
+            if (!Array.isArray(historico) || historico.length === 0) {
+                return; // Não há histórico para sincronizar
+            }
+            
+            // Agrupar histórico por temaId
+            const historicoPorTema = {};
+            historico.forEach(h => {
+                const temaId = String(h.temaId || h.id);
+                if (!historicoPorTema[temaId]) {
+                    historicoPorTema[temaId] = [];
+                }
+                historicoPorTema[temaId].push(h);
+            });
+            
+            // Atualizar cada tema com base no seu histórico
+            let atualizados = 0;
+            dados.forEach(tema => {
+                const temaId = String(tema.id);
+                const sessoesTema = historicoPorTema[temaId] || [];
+                
+                if (sessoesTema.length > 0) {
+                    // Calcular estatísticas do histórico
+                    const sessoes = sessoesTema.length;
+                    const somaRendimento = sessoesTema.reduce((sum, h) => sum + (h.rendimento || 0), 0);
+                    const rendimentoMedio = somaRendimento / sessoes;
+                    const somaTempo = sessoesTema.reduce((sum, h) => sum + (h.tempo || 0), 0);
+                    
+                    // Encontrar última sessão
+                    const ultimaSessao = sessoesTema.sort((a, b) => {
+                        const dataA = new Date(a.data || 0);
+                        const dataB = new Date(b.data || 0);
+                        return dataB - dataA;
+                    })[0];
+                    
+                    // Atualizar tema apenas se os dados estiverem diferentes
+                    if (tema.sessoes !== sessoes || 
+                        Math.abs((tema.rendimento || 0) - rendimentoMedio) > 0.01 ||
+                        tema.tempo !== somaTempo ||
+                        tema.ultEstudo !== ultimaSessao.data) {
+                        tema.sessoes = sessoes;
+                        tema.rendimento = rendimentoMedio;
+                        tema.tempo = somaTempo;
+                        tema.ultEstudo = ultimaSessao.data;
+                        if (ultimaSessao.data) {
+                            tema.agenda = calcularProximaRevisao(tema, ultimaSessao.data);
+                        }
+                        tema.status = sessoes > 0 ? 'Em estudo' : tema.status;
+                        atualizados++;
+                    }
+                }
+            });
+            
+            if (atualizados > 0) {
+                localStorage.setItem('vrvs_dados', JSON.stringify(dados));
+                console.log(`🔄 Sincronizados ${atualizados} temas com base no histórico`);
+                renderDados();
+            }
+        }
+        
         function updateFeedbackSelect() {
             // Recarregar dados do localStorage antes de atualizar selects
             dados = JSON.parse(localStorage.getItem('vrvs_dados') || '[]');
@@ -5262,6 +5330,11 @@
                 }, 1000);
             }
             
+            // Sincronizar dados do histórico ao carregar (para corrigir dados desatualizados)
+            setTimeout(() => {
+                sincronizarDadosDoHistorico();
+            }, 500);
+            
             // Page Visibility API - Detectar quando aba sai/volta ao foco
             document.addEventListener('visibilitychange', function() {
                 if (document.hidden) {
@@ -5445,6 +5518,14 @@
             document.getElementById('feedbackArea').addEventListener('change', updateFeedbackTemaSelect);
             document.getElementById('feedbackForm').onsubmit = function(e) {
                 e.preventDefault();
+                
+                // IMPORTANTE: Recarregar dados do localStorage antes de processar feedback (fix para iOS)
+                dados = JSON.parse(localStorage.getItem('vrvs_dados') || '[]');
+                if (Array.isArray(dados)) {
+                    dados = dados.map(d => fixAreaTemaObjeto(d));
+                }
+                historico = JSON.parse(localStorage.getItem('vrvs_historico') || '[]');
+                
                 const temaId = document.getElementById('feedbackTema').value;
                 // CORREÇÃO: Usar data do formulário (input feedbackData)
                 const dataSessao = document.getElementById('feedbackData').value;
@@ -5587,11 +5668,13 @@
                 const proximaData = formatarData(tema.agenda);
                 mostrarNotificacaoFeedback(`✅ Performance registrada!<br>📅 Próxima revisão: ${proximaData}`);
                 
+                // Atualizar todas as visualizações
+                renderDados();
                 renderTarefas();
                 renderAgenda();
-                renderDados();
-                renderHistorico();
                 renderPendencias();
+                updateFeedbackSelect();
+                renderHistorico();
                 updateStats();
             };
             

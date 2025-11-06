@@ -5857,17 +5857,37 @@
                 });
             }
             
-            // Splash Screen - Esconder após carregar
-            setTimeout(() => {
-                const splash = document.getElementById('splashScreen');
-                if (splash) {
-                    splash.classList.add('fade-out');
+            // Splash Screen - Esconder após carregar (GARANTIR que sempre esconde, mesmo com erro)
+            function esconderSplashScreen() {
+                try {
+                    const splash = document.getElementById('splashScreen');
+                    if (splash) {
+                        splash.classList.add('fade-out');
+                        document.body.classList.remove('splash-loading');
+                        setTimeout(() => {
+                            splash.classList.add('hidden');
+                            splash.style.display = 'none';
+                        }, 800);
+                    } else {
+                        // Se não encontrar splash, remover classe do body mesmo assim
+                        document.body.classList.remove('splash-loading');
+                    }
+                } catch (error) {
+                    console.error('Erro ao esconder splash:', error);
+                    // Forçar remoção da classe mesmo com erro
                     document.body.classList.remove('splash-loading');
-                    setTimeout(() => {
-                        splash.classList.add('hidden');
-                    }, 800);
+                    const splash = document.getElementById('splashScreen');
+                    if (splash) {
+                        splash.style.display = 'none';
+                    }
                 }
-            }, 2500); // Mostrar por 2.5 segundos
+            }
+            
+            // Esconder splash após 2.5 segundos
+            setTimeout(esconderSplashScreen, 2500);
+            
+            // GARANTIR que esconde mesmo se houver erro - timeout de segurança
+            setTimeout(esconderSplashScreen, 5000);
             
             // Inicializar campo de data com hoje
             document.getElementById('feedbackData').value = new Date().toISOString().split('T')[0];
@@ -6434,19 +6454,23 @@
             };
             
             // Fechar modal ao clicar fora dele (mas não interferir com botões dentro)
-            document.addEventListener('click', function(e) {
-                const modal = document.getElementById('confirmarFeedbackModal');
-                if (modal && modal.classList.contains('active')) {
-                    const modalContent = modal.querySelector('.modal-content');
-                    // Só fechar se clicar no fundo do modal (não no conteúdo ou botões)
-                    if (e.target === modal || (modalContent && !modalContent.contains(e.target))) {
-                        // Verificar se não é um botão ou input dentro do modal
-                        if (!e.target.closest('button') && !e.target.closest('input') && !e.target.closest('textarea') && !e.target.closest('select')) {
-                            window.closeConfirmarFeedbackModal();
+            // IMPORTANTE: Adicionar apenas uma vez, dentro de DOMContentLoaded
+            if (!window.modalClickListenerAdded) {
+                document.addEventListener('click', function(e) {
+                    const modal = document.getElementById('confirmarFeedbackModal');
+                    if (modal && modal.classList.contains('active')) {
+                        const modalContent = modal.querySelector('.modal-content');
+                        // Só fechar se clicar no fundo do modal (não no conteúdo ou botões)
+                        if (e.target === modal || (modalContent && !modalContent.contains(e.target))) {
+                            // Verificar se não é um botão ou input dentro do modal
+                            if (!e.target.closest('button') && !e.target.closest('input') && !e.target.closest('textarea') && !e.target.closest('select')) {
+                                window.closeConfirmarFeedbackModal();
+                            }
                         }
                     }
-                }
-            });
+                });
+                window.modalClickListenerAdded = true;
+            }
             
             
             // Função local que chama a global (compatibilidade)

@@ -6009,12 +6009,16 @@
                     
                     // Guardar temaId no modal para uso posterior
                     const confirmarModal = document.getElementById('confirmarFeedbackModal');
+                    console.log('🔍 Procurando modal de confirmação:', confirmarModal);
                     if (confirmarModal) {
                         confirmarModal.dataset.temaId = temaId;
                         
                         // Mostrar modal de confirmação
                         confirmarModal.classList.add('active');
-                        console.log('✅ Modal de confirmação aberto');
+                        console.log('✅ Modal de confirmação aberto - classes:', confirmarModal.className);
+                        
+                        // Garantir que o modal está visível
+                        confirmarModal.style.display = 'flex';
                     } else {
                         console.error('❌ Modal de confirmação não encontrado!');
                         // Se não tiver modal, salvar diretamente

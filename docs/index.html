@@ -5869,15 +5869,27 @@
                 }
             }, 2500);
             
-            // Inicializar campo de data com hoje
-            document.getElementById('feedbackData').value = new Date().toISOString().split('T')[0];
+            // Inicializar campo de data com hoje (só se elemento existir)
+            const feedbackData = document.getElementById('feedbackData');
+            if (feedbackData) {
+                feedbackData.value = new Date().toISOString().split('T')[0];
+            }
             
-            // Inicializar data inicial do lembrete com hoje
-            document.getElementById('lembreteDataInicial').value = new Date().toISOString().split('T')[0];
+            // Inicializar data inicial do lembrete com hoje (só se elemento existir)
+            const lembreteDataInicial = document.getElementById('lembreteDataInicial');
+            if (lembreteDataInicial) {
+                lembreteDataInicial.value = new Date().toISOString().split('T')[0];
+            }
             
-            // Event listeners para filtros de agenda
-            document.getElementById('agendaDataInicio').addEventListener('change', renderAgenda);
-            document.getElementById('agendaDataFim').addEventListener('change', renderAgenda);
+            // Event listeners para filtros de agenda (só se elementos existirem)
+            const agendaDataInicio = document.getElementById('agendaDataInicio');
+            const agendaDataFim = document.getElementById('agendaDataFim');
+            if (agendaDataInicio) {
+                agendaDataInicio.addEventListener('change', renderAgenda);
+            }
+            if (agendaDataFim) {
+                agendaDataFim.addEventListener('change', renderAgenda);
+            }
             
             // CADASTRO FORM
             document.getElementById('cadastroForm').onsubmit = function(e) {

@@ -5428,14 +5428,31 @@
                     // Aba voltou ao foco - atualizar dados do localStorage (fix para iOS)
                     dados = JSON.parse(localStorage.getItem('vrvs_dados') || '[]');
                     if (Array.isArray(dados)) {
-                        dados = dados.map(d => fixAreaTemaObjeto(d));
+                        dados = dados.map(d => {
+                            try {
+                                const corrigido = fixAreaTemaObjeto(d);
+                                const { area, tema } = fixAreaTema(corrigido.area || '', corrigido.tema || '');
+                                corrigido.area = area;
+                                corrigido.tema = tema;
+                                return corrigido;
+                            } catch (e) {
+                                return d;
+                            }
+                        }).filter(d => d && d.tema && d.tema.trim() !== '');
                     }
                     historico = JSON.parse(localStorage.getItem('vrvs_historico') || '[]');
+                    
+                    // Atualizar variável global
+                    window.dados = dados;
                     
                     // Se estiver na aba dados, atualizar a visualização
                     const abaAtiva = document.querySelector('.section.active');
                     if (abaAtiva && abaAtiva.id === 'dados') {
                         renderDados();
+                    }
+                    // Se estiver na aba feedback, atualizar selects
+                    if (abaAtiva && abaAtiva.id === 'feedback') {
+                        updateFeedbackSelect();
                     }
                     
                     // Restaurar e calcular tempo decorrido BASEADO EM TIMESTAMP ORIGINAL

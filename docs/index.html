@@ -5857,71 +5857,27 @@
                 });
             }
             
-            // Splash Screen - Esconder após carregar (GARANTIR que sempre esconde, mesmo com erro)
-            function esconderSplashScreen() {
-                try {
-                    const splash = document.getElementById('splashScreen');
-                    if (splash) {
-                        splash.classList.add('fade-out');
-                        document.body.classList.remove('splash-loading');
-                        setTimeout(() => {
-                            splash.classList.add('hidden');
-                            splash.style.display = 'none';
-                        }, 800);
-                    } else {
-                        // Se não encontrar splash, remover classe do body mesmo assim
-                        document.body.classList.remove('splash-loading');
-                    }
-                } catch (error) {
-                    console.error('Erro ao esconder splash:', error);
-                    // Forçar remoção da classe mesmo com erro
+            // Splash Screen - Esconder após carregar
+            setTimeout(() => {
+                const splash = document.getElementById('splashScreen');
+                if (splash) {
+                    splash.classList.add('fade-out');
                     document.body.classList.remove('splash-loading');
-                    const splash = document.getElementById('splashScreen');
-                    if (splash) {
-                        splash.style.display = 'none';
-                    }
+                    setTimeout(() => {
+                        splash.classList.add('hidden');
+                    }, 800);
                 }
-            }
+            }, 2500);
             
-            // Esconder splash após 2.5 segundos
-            setTimeout(esconderSplashScreen, 2500);
+            // Inicializar campo de data com hoje
+            document.getElementById('feedbackData').value = new Date().toISOString().split('T')[0];
             
-            // GARANTIR que esconde mesmo se houver erro - timeout de segurança
-            setTimeout(esconderSplashScreen, 5000);
+            // Inicializar data inicial do lembrete com hoje
+            document.getElementById('lembreteDataInicial').value = new Date().toISOString().split('T')[0];
             
-            // Inicializar campo de data com hoje (com proteção contra erro)
-            try {
-                const feedbackData = document.getElementById('feedbackData');
-                if (feedbackData) {
-                    feedbackData.value = new Date().toISOString().split('T')[0];
-                }
-            } catch (error) {
-                console.error('Erro ao inicializar feedbackData:', error);
-            }
-            
-            // Inicializar data inicial do lembrete com hoje (com proteção contra erro)
-            try {
-                const lembreteDataInicial = document.getElementById('lembreteDataInicial');
-                if (lembreteDataInicial) {
-                    lembreteDataInicial.value = new Date().toISOString().split('T')[0];
-                }
-            } catch (error) {
-                console.error('Erro ao inicializar lembreteDataInicial:', error);
-            }
-            
-            // Event listeners para filtros de agenda (com proteção contra erro)
-            try {
-                const agendaDataInicio = document.getElementById('agendaDataInicio');
-                const agendaDataFim = document.getElementById('agendaDataFim');
-                if (agendaDataInicio) {
-                    agendaDataInicio.addEventListener('change', renderAgenda);
-                }
-                if (agendaDataFim) {
-                    agendaDataFim.addEventListener('change', renderAgenda);
-                }
-            } catch (error) {
-                console.error('Erro ao adicionar listeners de agenda:', error);
-            }
+            // Event listeners para filtros de agenda
+            document.getElementById('agendaDataInicio').addEventListener('change', renderAgenda);
+            document.getElementById('agendaDataFim').addEventListener('change', renderAgenda);
             
             // CADASTRO FORM
             document.getElementById('cadastroForm').onsubmit = function(e) {
@@ -6477,24 +6433,16 @@
                 }
             };
             
-            // Fechar modal ao clicar fora dele (mas não interferir com botões dentro)
-            // IMPORTANTE: Adicionar apenas uma vez, dentro de DOMContentLoaded
-            if (!window.modalClickListenerAdded) {
-                document.addEventListener('click', function(e) {
-                    const modal = document.getElementById('confirmarFeedbackModal');
-                    if (modal && modal.classList.contains('active')) {
-                        const modalContent = modal.querySelector('.modal-content');
-                        // Só fechar se clicar no fundo do modal (não no conteúdo ou botões)
-                        if (e.target === modal || (modalContent && !modalContent.contains(e.target))) {
-                            // Verificar se não é um botão ou input dentro do modal
-                            if (!e.target.closest('button') && !e.target.closest('input') && !e.target.closest('textarea') && !e.target.closest('select')) {
-                                window.closeConfirmarFeedbackModal();
-                            }
-                        }
+            // Fechar modal ao clicar fora dele
+            document.addEventListener('click', function(e) {
+                const modal = document.getElementById('confirmarFeedbackModal');
+                if (modal && modal.classList.contains('active')) {
+                    const modalContent = modal.querySelector('.modal-content');
+                    if (modalContent && !modalContent.contains(e.target) && e.target !== modal) {
+                        window.closeConfirmarFeedbackModal();
                     }
-                });
-                window.modalClickListenerAdded = true;
-            }
+                }
+            });
             
             
             // Função local que chama a global (compatibilidade)
@@ -6583,30 +6531,18 @@
                 renderLembretes();
             };
             
-            // Inicializações (com proteção contra erros)
-            try {
-                renderTarefas();
-                renderAgenda();
-                renderDados();
-                renderPendencias();
-                updateFeedbackSelect();
-                updateStats();
-                renderHistorico();
-                atualizarSelectsLembrete();
-                renderLembretes();
-                atualizarSelectsCaderno();
-                renderCaderno();
-            } catch (error) {
-                console.error('❌ Erro ao inicializar renderizações:', error);
-                // Garantir que splash screen seja escondido mesmo com erro
-                setTimeout(() => {
-                    const splash = document.getElementById('splashScreen');
-                    if (splash) {
-                        splash.style.display = 'none';
-                    }
-                    document.body.classList.remove('splash-loading');
-                }, 1000);
-            }
+            // Inicializações
+            renderTarefas();
+            renderAgenda();
+            renderDados();
+            renderPendencias();
+            updateFeedbackSelect();
+            updateStats();
+            renderHistorico();
+            atualizarSelectsLembrete();
+            renderLembretes();
+            atualizarSelectsCaderno();
+            renderCaderno();
         };
     </script>
 </body>

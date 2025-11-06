@@ -1500,9 +1500,6 @@
                         <button class="btn" onclick="salvarDadosManualmente()" style="background: rgba(0, 206, 209, 0.15); color: rgba(0, 206, 209, 0.8); border: 1px solid rgba(0, 206, 209, 0.3); font-weight: 500;">
                             💾 SALVAR DADOS AGORA
                         </button>
-                        <button class="btn" onclick="sincronizarDadosDoHistorico(); mostrarNotificacaoFeedback('🔄 Sincronização concluída! Verifique os dados atualizados.', 3000);" style="background: rgba(255, 127, 80, 0.15); color: rgba(255, 127, 80, 0.9); border: 1px solid rgba(255, 127, 80, 0.3); font-weight: 500;">
-                            🔄 SINCRONIZAR COM HISTÓRICO
-                        </button>
                         <div style="font-size: 11px; color: rgba(0,206,209,0.7);">
                             💡 Salva tudo automaticamente no navegador
                         </div>
@@ -3653,8 +3650,6 @@
             event.target.classList.add('active');
             if (sectionId === 'dados') {
                 renderDados();
-                // Sincronizar com histórico ao abrir aba Dados (para garantir dados atualizados)
-                setTimeout(() => sincronizarDadosDoHistorico(), 100);
             }
             if (sectionId === 'tarefa') renderTarefas();
             if (sectionId === 'agenda') renderAgenda();
@@ -5412,11 +5407,6 @@
                 }, 1000);
             }
             
-            // Sincronizar dados do histórico ao carregar (para corrigir dados desatualizados)
-            setTimeout(() => {
-                sincronizarDadosDoHistorico();
-            }, 500);
-            
             // Page Visibility API - Detectar quando aba sai/volta ao foco
             document.addEventListener('visibilitychange', function() {
                 if (document.hidden) {
@@ -5587,13 +5577,24 @@
                 dados.push(novoTema);
                 localStorage.setItem('vrvs_dados', JSON.stringify(dados));
                 
+                // IMPORTANTE: Garantir que a variável global está sincronizada
+                window.dados = dados;
+                
                 this.reset();
                 mostrarNotificacaoFeedback('✅ Tema adicionado com sucesso!');
                 
-                // Atualizar selects e renderizações
+                // Atualizar selects e renderizações - renderDados() já recarrega do localStorage, mas garantimos que está atualizado
                 renderDados();
                 updateFeedbackSelect();
                 renderPendencias();
+                
+                // Se estiver na aba cadastro, mudar para aba dados para ver o tema adicionado
+                const abaAtiva = document.querySelector('.section.active');
+                if (abaAtiva && abaAtiva.id === 'cadastro') {
+                    setTimeout(() => {
+                        showSection('dados');
+                    }, 500);
+                }
             };
             
             // FEEDBACK FORM - 100% FUNCIONANDO!

@@ -1467,6 +1467,83 @@
         </div>
     </div>
     
+    <!-- Modal de Confirmação de Feedback -->
+    <div id="confirmarFeedbackModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">✅ Confirmar Dados da Sessão</h2>
+                <button class="modal-close" onclick="closeConfirmarFeedbackModal()">×</button>
+            </div>
+            <div style="padding: 20px;">
+                <div style="background: rgba(0,206,209,0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(0,206,209,0.3);">
+                    <div style="font-size: 13px; color: rgba(0,206,209,0.8); margin-bottom: 15px; font-weight: 600;">📊 Revise e ajuste os dados antes de salvar:</div>
+                    
+                    <div style="display: grid; gap: 12px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 11px; color: rgba(255,255,255,0.6); display: block; margin-bottom: 4px;">📅 Data da Sessão</label>
+                            <input type="date" id="confirmarData" class="form-input" style="font-size: 12px; padding: 8px;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 11px; color: rgba(255,255,255,0.6); display: block; margin-bottom: 4px;">📊 Performance (%)</label>
+                            <input type="number" id="confirmarRendimento" class="form-input" min="0" max="100" style="font-size: 12px; padding: 8px;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 11px; color: rgba(255,255,255,0.6); display: block; margin-bottom: 4px;">⏱️ Tempo Total (min)</label>
+                            <input type="number" id="confirmarTempo" class="form-input" min="0" style="font-size: 12px; padding: 8px;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 11px; color: rgba(255,255,255,0.6); display: block; margin-bottom: 4px;">⏸️ Tempo de Intervalos (min)</label>
+                            <input type="number" id="confirmarTempoIntervalo" class="form-input" min="0" style="font-size: 12px; padding: 8px;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 11px; color: rgba(255,255,255,0.6); display: block; margin-bottom: 4px;">🔢 Número de Intervalos</label>
+                            <input type="number" id="confirmarNumIntervalos" class="form-input" min="0" style="font-size: 12px; padding: 8px;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 11px; color: rgba(255,255,255,0.6); display: block; margin-bottom: 4px;">❓ Tempo em Questões (min)</label>
+                            <input type="number" id="confirmarTempoQuestoes" class="form-input" min="0" style="font-size: 12px; padding: 8px;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 11px; color: rgba(255,255,255,0.6); display: block; margin-bottom: 4px;">❓ Quantidade de Questões</label>
+                            <input type="text" id="confirmarQuestoes" class="form-input" placeholder="Ex: 15/20" style="font-size: 12px; padding: 8px;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 11px; color: rgba(255,255,255,0.6); display: block; margin-bottom: 4px;">🃏 Tempo em Flashcards (min)</label>
+                            <input type="number" id="confirmarTempoFlashcards" class="form-input" min="0" style="font-size: 12px; padding: 8px;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 11px; color: rgba(255,255,255,0.6); display: block; margin-bottom: 4px;">🃏 Quantidade de Flashcards</label>
+                            <input type="number" id="confirmarFlashcards" class="form-input" min="0" style="font-size: 12px; padding: 8px;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 11px; color: rgba(255,255,255,0.6); display: block; margin-bottom: 4px;">💡 Diretriz Próxima Sessão</label>
+                            <input type="text" id="confirmarSugestao" class="form-input" style="font-size: 12px; padding: 8px;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 11px; color: rgba(255,255,255,0.6); display: block; margin-bottom: 4px;">📝 Log da Sessão</label>
+                            <textarea id="confirmarObs" class="form-textarea" style="font-size: 12px; padding: 8px; min-height: 60px;"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn" onclick="salvarFeedbackConfirmado()" style="flex: 1;">✅ CONFIRMAR E SALVAR</button>
+                    <button class="btn btn-secondary" onclick="closeConfirmarFeedbackModal()" style="flex: 1;">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <div class="container">
         <div class="header">
             <div class="header-title">🧠 VRVS CIRCUIT TECH</div>
@@ -4243,8 +4320,8 @@
                         intervalosIndividuais = dados.intervalosIndividuais || []; // Restaurar intervalos individuais
                         intervaloInicioTimestamp = dados.intervaloInicioTimestamp || null;
                         
-                        // Se estava em intervalo, restaurar estado do intervalo
-                        if (dados.intervaloAtivo) {
+                        // Se estava em intervalo, restaurar estado do intervalo APENAS se não foi encerrado
+                        if (dados.intervaloAtivo && !dados.sessaoEncerrada) {
                             intervaloAtivo = true;
                             intervaloSegundos = dados.intervaloSegundos + tempoDecorrido;
                             document.getElementById('cronometroIntervalo').textContent = '▶️ Finalizar Intervalo';
@@ -4255,10 +4332,27 @@
                             if (intervaloInterval) {
                                 clearInterval(intervaloInterval);
                             }
+                            intervaloInicioTimestamp = dados.intervaloInicioTimestamp || Date.now();
                             intervaloInterval = setInterval(() => {
-                                intervaloSegundos++;
+                                if (intervaloInicioTimestamp) {
+                                    const agora = Date.now();
+                                    intervaloSegundos = Math.floor((agora - intervaloInicioTimestamp) / 1000);
+                                } else {
+                                    intervaloSegundos++;
+                                }
                                 document.getElementById('tempoIntervaloDisplay').textContent = formatarTempoCronometro(intervaloSegundos);
-                            }, 1000);
+                            }, 100);
+                        } else {
+                            // Garantir que intervalo está desativado se sessão foi encerrada
+                            intervaloAtivo = false;
+                            intervaloSegundos = 0;
+                            intervaloInicioTimestamp = null;
+                            if (intervaloInterval) {
+                                clearInterval(intervaloInterval);
+                                intervaloInterval = null;
+                            }
+                            document.getElementById('cronometroIntervalo').textContent = '⏸️ Intervalo';
+                            document.getElementById('tempoIntervalo').style.display = 'none';
                         }
                         
                         // Se estava rodando, reiniciar contagem COM TIMESTAMP PRECISO
@@ -4294,7 +4388,8 @@
                     intervaloAtivo: intervaloAtivo,
                     intervaloSegundos: intervaloSegundos,
                     intervalosIndividuais: intervalosIndividuais, // Salvar array de intervalos individuais
-                    intervaloInicioTimestamp: intervaloInicioTimestamp
+                    intervaloInicioTimestamp: intervaloInicioTimestamp,
+                    sessaoEncerrada: false // Marcar que sessão não foi encerrada
                 }));
             } else {
                 localStorage.removeItem('vrvs_cronometro');
@@ -4502,21 +4597,7 @@
         
         // Função para encerrar sessão e mostrar modal
         function encerrarSessao() {
-            // Salvar tempo final antes de zerar
-            let tempoFinalSalvo = 0;
-            
-            // Parar cronômetro completamente se estiver rodando
-            if (cronometroRodando) {
-                clearInterval(cronometroInterval);
-                cronometroInterval = null;
-                tempoFinalSalvo = calcularTempoDecorrido();
-                cronometroRodando = false;
-                document.getElementById('cronometroToggle').textContent = '⏱️ Iniciar Cronômetro';
-            } else {
-                tempoFinalSalvo = cronometroSegundos;
-            }
-            
-            // Finalizar intervalo ativo se houver
+            // FINALIZAR INTERVALO SE ESTIVER ATIVO (não deixar rodando)
             if (intervaloAtivo) {
                 clearInterval(intervaloInterval);
                 intervaloInterval = null;
@@ -4536,6 +4617,23 @@
                 intervaloAtivo = false;
                 intervaloSegundos = 0;
                 intervaloInicioTimestamp = null;
+                
+                document.getElementById('cronometroIntervalo').textContent = '⏸️ Intervalo';
+                document.getElementById('tempoIntervalo').style.display = 'none';
+            }
+            
+            // Salvar tempo final antes de zerar
+            let tempoFinalSalvo = 0;
+            
+            // Parar cronômetro completamente se estiver rodando
+            if (cronometroRodando) {
+                clearInterval(cronometroInterval);
+                cronometroInterval = null;
+                tempoFinalSalvo = calcularTempoDecorrido();
+                cronometroRodando = false;
+                document.getElementById('cronometroToggle').textContent = '⏱️ Iniciar Cronômetro';
+            } else {
+                tempoFinalSalvo = cronometroSegundos;
             }
             
             if (tempoFinalSalvo === 0) {
@@ -4563,6 +4661,9 @@
             cronometroSegundos = 0;
             tempoTotalIntervalo = 0;
             intervalosIndividuais = [];
+            intervaloAtivo = false; // GARANTIR que intervalo está desativado
+            intervaloSegundos = 0;
+            intervaloInicioTimestamp = null;
             // Limpar timestamps e estado do cronômetro
             localStorage.removeItem('vrvs_cronometro');
             localStorage.removeItem('vrvs_cronometro_timestamp');
@@ -4571,6 +4672,7 @@
             // Atualizar display do cronômetro para mostrar 00:00:00
             document.getElementById('cronometroDisplay').textContent = '00:00:00';
             document.getElementById('tempoIntervaloTotal').style.display = 'none';
+            document.getElementById('tempoIntervalo').style.display = 'none';
             
             // Guardar tempo salvo no modal para uso no feedback
             const modal = document.getElementById('encerrarSessaoModal');
@@ -5764,77 +5866,62 @@
             feedbackForm.onsubmit = function(e) {
                 e.preventDefault();
                 
-                try {
-                    // IMPORTANTE: Recarregar dados do localStorage antes de processar feedback (fix para iOS)
-                    dados = JSON.parse(localStorage.getItem('vrvs_dados') || '[]');
-                    if (Array.isArray(dados)) {
-                        dados = dados.map(d => fixAreaTemaObjeto(d));
-                    }
-                    historico = JSON.parse(localStorage.getItem('vrvs_historico') || '[]');
-                    
-                    const temaId = document.getElementById('feedbackTema').value;
-                    if (!temaId) {
-                        mostrarNotificacaoFeedback('⚠️ Selecione um módulo!', 'error');
-                        return false;
-                    }
-                    
-                    // CORREÇÃO: Usar data do formulário (input feedbackData)
-                    const dataSessao = document.getElementById('feedbackData').value;
-                    if (!dataSessao) {
-                        mostrarNotificacaoFeedback('⚠️ Selecione uma data para a sessão!', 'error');
-                        return false;
-                    }
-                    
-                    const rendimentoInput = document.getElementById('feedbackRendimento');
-                    const rendimento = parseInt(rendimentoInput.value);
-                    if (!rendimento || rendimento < 0 || rendimento > 100) {
-                        mostrarNotificacaoFeedback('⚠️ Preencha a performance (0-100)!', 'error');
-                        return false;
-                    }
-                    
-                    const tempoInput = document.getElementById('feedbackTempo');
-                    // Usar tempo do modal se disponível (ao encerrar sessão), senão usar cronômetro, senão usar input
-                    const modal = document.getElementById('encerrarSessaoModal');
-                    let tempo = 0;
-                    if (modal && modal.dataset.tempoSalvo) {
-                        // Tempo foi salvo do modal ao encerrar sessão
-                        tempo = Math.floor(parseInt(modal.dataset.tempoSalvo) / 60);
-                        tempoInput.value = tempo;
-                    } else if (cronometroSegundos > 0) {
-                        // Usar tempo do cronômetro se ainda estiver rodando
-                        tempo = obterTempoCronometroMinutos();
-                        tempoInput.value = tempo;
-                    } else {
-                        // Usar input manual
-                        tempo = parseInt(tempoInput.value) || 0;
-                    }
-                    
-                    if (tempo <= 0) {
-                        mostrarNotificacaoFeedback('⚠️ Preencha a duração da sessão!', 'error');
-                        return false;
-                    }
-                    
-                    // Obter tempo de intervalo do modal ou calcular
-                    let tempoIntervalo = 0;
-                    if (modal && modal.dataset.intervalosSalvos) {
-                        tempoIntervalo = Math.floor(parseInt(modal.dataset.intervalosSalvos) / 60);
-                    } else {
-                        tempoIntervalo = obterTempoIntervaloMinutos();
-                    }
+                // Validar campos obrigatórios antes de mostrar modal de confirmação
+                const temaId = document.getElementById('feedbackTema').value;
+                if (!temaId) {
+                    mostrarNotificacaoFeedback('⚠️ Selecione um módulo!', 'error');
+                    return false;
+                }
                 
-                // Novos campos opcionais
+                const dataSessao = document.getElementById('feedbackData').value;
+                if (!dataSessao) {
+                    mostrarNotificacaoFeedback('⚠️ Selecione uma data para a sessão!', 'error');
+                    return false;
+                }
+                
+                const rendimentoInput = document.getElementById('feedbackRendimento');
+                const rendimento = parseInt(rendimentoInput.value);
+                if (!rendimento || rendimento < 0 || rendimento > 100) {
+                    mostrarNotificacaoFeedback('⚠️ Preencha a performance (0-100)!', 'error');
+                    return false;
+                }
+                
+                // Coletar todos os dados do formulário
+                const tempoInput = document.getElementById('feedbackTempo');
+                const modal = document.getElementById('encerrarSessaoModal');
+                let tempo = 0;
+                if (modal && modal.dataset.tempoSalvo) {
+                    tempo = Math.floor(parseInt(modal.dataset.tempoSalvo) / 60);
+                } else if (cronometroSegundos > 0) {
+                    tempo = obterTempoCronometroMinutos();
+                } else {
+                    tempo = parseInt(tempoInput.value) || 0;
+                }
+                
+                if (tempo <= 0) {
+                    mostrarNotificacaoFeedback('⚠️ Preencha a duração da sessão!', 'error');
+                    return false;
+                }
+                
+                // Obter tempo de intervalo
+                let tempoIntervalo = 0;
+                if (modal && modal.dataset.intervalosSalvos) {
+                    tempoIntervalo = Math.floor(parseInt(modal.dataset.intervalosSalvos) / 60);
+                } else {
+                    tempoIntervalo = obterTempoIntervaloMinutos();
+                }
+                
                 const numeroIntervalos = parseInt(document.getElementById('feedbackNumeroIntervalos').value) || 0;
                 const intervalosTexto = document.getElementById('feedbackIntervalos').value.trim() || '';
                 const questoesTexto = document.getElementById('feedbackQuestoes').value.trim() || '';
                 const flashcards = parseInt(document.getElementById('feedbackFlashcards').value) || 0;
                 
-                // Tempo por atividade (dos novos boxes discretos)
                 const tempoQuestoesInput = document.getElementById('feedbackTempoQuestoes');
                 const tempoFlashcardsInput = document.getElementById('feedbackTempoFlashcards');
                 let tempoQuestoes = tempoQuestoesInput ? parseInt(tempoQuestoesInput.value) || 0 : 0;
                 let tempoFlashcards = tempoFlashcardsInput ? parseInt(tempoFlashcardsInput.value) || 0 : 0;
                 
-                // Extrair dados de questões (formato: acertos/total)
+                // Extrair dados de questões
                 let quantQuestoes = 0;
                 let quantQuestoesAcertos = 0;
                 if (questoesTexto && questoesTexto.includes('/')) {
@@ -5850,7 +5937,6 @@
                 }
                 
                 // Se não tiver dados nos boxes mas tiver no modal, usar do modal
-                const modal = document.getElementById('encerrarSessaoModal');
                 if (tempoQuestoes === 0 && modal && modal.dataset.tempoQuestoes) {
                     tempoQuestoes = parseInt(modal.dataset.tempoQuestoes) || 0;
                 }
@@ -5867,116 +5953,182 @@
                 const sugestao = document.getElementById('feedbackSugestao').value.trim();
                 const obs = document.getElementById('feedbackObs').value.trim();
                 
-                // CORREÇÃO: Comparação correta de IDs
-                const tema = dados.find(t => String(t.id) === String(temaId));
-                if (!tema) {
-                    mostrarNotificacaoFeedback('⚠️ Módulo não encontrado! Selecione um módulo válido.', 'error');
-                    return false;
-                }
+                // Preencher modal de confirmação com os dados coletados
+                document.getElementById('confirmarData').value = dataSessao;
+                document.getElementById('confirmarRendimento').value = rendimento;
+                document.getElementById('confirmarTempo').value = tempo;
+                document.getElementById('confirmarTempoIntervalo').value = tempoIntervalo;
+                document.getElementById('confirmarNumIntervalos').value = numeroIntervalos;
+                document.getElementById('confirmarTempoQuestoes').value = tempoQuestoes;
+                document.getElementById('confirmarQuestoes').value = questoesTexto || (quantQuestoes > 0 ? `${quantQuestoesAcertos}/${quantQuestoes}` : '');
+                document.getElementById('confirmarTempoFlashcards').value = tempoFlashcards;
+                document.getElementById('confirmarFlashcards').value = quantFlashcards;
+                document.getElementById('confirmarSugestao').value = sugestao;
+                document.getElementById('confirmarObs').value = obs;
                 
-                // Atualizar contador80
-                if (rendimento >= 80) {
-                    tema.contador80 = (tema.contador80 || 0) + 1;
-                } else {
-                    tema.contador80 = 0;
-                }
+                // Guardar temaId no modal para uso posterior
+                const confirmarModal = document.getElementById('confirmarFeedbackModal');
+                confirmarModal.dataset.temaId = temaId;
                 
-                // Atualizar dados do tema
-                tema.rendimento = rendimento / 100;
-                tema.sessoes = (tema.sessoes || 0) + 1;
-                tema.ultEstudo = dataSessao;
-                // CORREÇÃO: Passar dataSessao para calcular baseado na data do feedback, não na data atual
-                tema.agenda = calcularProximaRevisao(tema, dataSessao);
-                tema.tempo = (tema.tempo || 0) + tempo;
-                tema.status = tema.sessoes === 1 ? 'Em estudo' : tema.status;
+                // Mostrar modal de confirmação
+                document.getElementById('confirmarFeedbackModal').classList.add('active');
                 
-                // Adicionar observações E sugestão
-                let novaObs = '';
-                if (obs) novaObs = `${dataSessao}: ${obs}`;
-                
-                // Adicionar novos dados às observações se preenchidos
-                if (questoesTexto) {
-                    novaObs += (novaObs ? ' | ' : '') + `Q${questoesTexto}`;
-                }
-                if (quantFlashcards > 0) {
-                    novaObs += (novaObs ? ' | ' : '') + `FC${quantFlashcards}`;
-                }
-                
-                if (sugestao) novaObs += (novaObs ? ' | ' : '') + `Sugestão: ${sugestao}`;
-                
-                if (novaObs) {
-                    tema.observacoes = tema.observacoes 
-                        ? tema.observacoes + '\n' + novaObs
-                        : novaObs;
-                }
-                
-                // SALVAR SUGESTÃO NO TEMA
-                tema.sugestao = sugestao || '';
-                
-                // ADICIONAR AO HISTÓRICO
-                const { area: areaCorrigida, tema: temaCorrigido } = fixAreaTema(tema.area, tema.tema);
-                historico.push({
-                    id: Date.now(),
-                    temaId: tema.id,
-                    area: areaCorrigida,
-                    tema: temaCorrigido,
-                    rendimento: rendimento / 100,
-                    tempo: tempo,
-                    tempoIntervalo: tempoIntervalo || 0, // Tempo de intervalo em minutos
-                    numeroIntervalos: numeroIntervalos, // Número de intervalos
-                    intervalos: intervalosTexto, // Tempos de cada intervalo
-                    tempoQuestoes: tempoQuestoes, // Tempo gasto em questões (min)
-                    quantQuestoes: quantQuestoes, // Quantidade total de questões
-                    quantQuestoesAcertos: quantQuestoesAcertos, // Quantidade de acertos
-                    tempoFlashcards: tempoFlashcards, // Tempo gasto em flashcards (min)
-                    quantFlashcards: quantFlashcards, // Quantidade de flashcards revisados
-                    questoes: questoesTexto, // Questões (acertos/total) - mantido para compatibilidade
-                    flashcards: quantFlashcards, // Quantidade de flashcards - mantido para compatibilidade
-                    data: dataSessao,
-                    observacoes: obs || '-',
-                    sugestao: sugestao || '-'
-                });
-                
-                localStorage.setItem('vrvs_dados', JSON.stringify(dados));
-                localStorage.setItem('vrvs_historico', JSON.stringify(historico));
-                
-                this.reset();
-                document.getElementById('feedbackData').value = new Date().toISOString().split('T')[0];
-                // Limpar campos opcionais também
-                document.getElementById('feedbackNumeroIntervalos').value = '0';
-                document.getElementById('feedbackIntervalos').value = '';
-                document.getElementById('feedbackQuestoes').value = '';
-                document.getElementById('feedbackFlashcards').value = '';
-                // Limpar campos de tempo discretos
-                const tempoQuestoesInput = document.getElementById('feedbackTempoQuestoes');
-                const tempoFlashcardsInput = document.getElementById('feedbackTempoFlashcards');
-                if (tempoQuestoesInput) tempoQuestoesInput.value = '';
-                if (tempoFlashcardsInput) tempoFlashcardsInput.value = '';
-                
-                // Resetar cronômetro após salvar (incluindo tempo de intervalo)
-                resetCronometro();
-                
-                // NOTIFICAÇÃO DE SUCESSO!
-                const proximaData = formatarData(tema.agenda);
-                mostrarNotificacaoFeedback(`✅ Performance registrada!<br>📅 Próxima revisão: ${proximaData}`);
-                
-                // Atualizar todas as visualizações
-                renderDados();
-                renderTarefas();
-                renderAgenda();
-                renderPendencias();
-                updateFeedbackSelect();
-                renderHistorico();
-                updateStats();
-                
-                return false; // Prevenir submit padrão
-                
+                return false;
+            };
+            
+            // Função para fechar modal de confirmação
+            function closeConfirmarFeedbackModal() {
+                document.getElementById('confirmarFeedbackModal').classList.remove('active');
+            }
+            
+            // Função para salvar feedback após confirmação
+            function salvarFeedbackConfirmado() {
+                try {
+                    // IMPORTANTE: Recarregar dados do localStorage antes de processar feedback (fix para iOS)
+                    dados = JSON.parse(localStorage.getItem('vrvs_dados') || '[]');
+                    if (Array.isArray(dados)) {
+                        dados = dados.map(d => fixAreaTemaObjeto(d));
+                    }
+                    historico = JSON.parse(localStorage.getItem('vrvs_historico') || '[]');
+                    
+                    const modal = document.getElementById('confirmarFeedbackModal');
+                    const temaId = modal.dataset.temaId;
+                    
+                    // Obter dados do modal de confirmação (com ajustes manuais do usuário)
+                    const dataSessao = document.getElementById('confirmarData').value;
+                    const rendimento = parseInt(document.getElementById('confirmarRendimento').value);
+                    const tempo = parseInt(document.getElementById('confirmarTempo').value) || 0;
+                    const tempoIntervalo = parseInt(document.getElementById('confirmarTempoIntervalo').value) || 0;
+                    const numeroIntervalos = parseInt(document.getElementById('confirmarNumIntervalos').value) || 0;
+                    const tempoQuestoes = parseInt(document.getElementById('confirmarTempoQuestoes').value) || 0;
+                    const questoesTexto = document.getElementById('confirmarQuestoes').value.trim() || '';
+                    const tempoFlashcards = parseInt(document.getElementById('confirmarTempoFlashcards').value) || 0;
+                    const quantFlashcards = parseInt(document.getElementById('confirmarFlashcards').value) || 0;
+                    const sugestao = document.getElementById('confirmarSugestao').value.trim();
+                    const obs = document.getElementById('confirmarObs').value.trim();
+                    
+                    // Extrair dados de questões
+                    let quantQuestoes = 0;
+                    let quantQuestoesAcertos = 0;
+                    if (questoesTexto && questoesTexto.includes('/')) {
+                        const partes = questoesTexto.split('/');
+                        quantQuestoesAcertos = parseInt(partes[0]) || 0;
+                        quantQuestoes = parseInt(partes[1]) || 0;
+                    }
+                    
+                    // Extrair intervalos texto se necessário
+                    const intervalosTexto = numeroIntervalos > 0 ? `Intervalos: ${numeroIntervalos}` : '';
+                    
+                    // CORREÇÃO: Comparação correta de IDs
+                    const tema = dados.find(t => String(t.id) === String(temaId));
+                    if (!tema) {
+                        mostrarNotificacaoFeedback('⚠️ Módulo não encontrado! Selecione um módulo válido.', 'error');
+                        closeConfirmarFeedbackModal();
+                        return false;
+                    }
+                    
+                    // Atualizar contador80
+                    if (rendimento >= 80) {
+                        tema.contador80 = (tema.contador80 || 0) + 1;
+                    } else {
+                        tema.contador80 = 0;
+                    }
+                    
+                    // Atualizar dados do tema
+                    tema.rendimento = rendimento / 100;
+                    tema.sessoes = (tema.sessoes || 0) + 1;
+                    tema.ultEstudo = dataSessao;
+                    tema.agenda = calcularProximaRevisao(tema, dataSessao);
+                    tema.tempo = (tema.tempo || 0) + tempo;
+                    tema.status = tema.sessoes === 1 ? 'Em estudo' : tema.status;
+                    
+                    // Adicionar observações E sugestão
+                    let novaObs = '';
+                    if (obs) novaObs = `${dataSessao}: ${obs}`;
+                    
+                    // Adicionar novos dados às observações se preenchidos
+                    if (questoesTexto) {
+                        novaObs += (novaObs ? ' | ' : '') + `Q${questoesTexto}`;
+                    }
+                    if (quantFlashcards > 0) {
+                        novaObs += (novaObs ? ' | ' : '') + `FC${quantFlashcards}`;
+                    }
+                    
+                    if (sugestao) novaObs += (novaObs ? ' | ' : '') + `Sugestão: ${sugestao}`;
+                    
+                    if (novaObs) {
+                        tema.observacoes = tema.observacoes 
+                            ? tema.observacoes + '\n' + novaObs
+                            : novaObs;
+                    }
+                    
+                    // SALVAR SUGESTÃO NO TEMA
+                    tema.sugestao = sugestao || '';
+                    
+                    // ADICIONAR AO HISTÓRICO
+                    const { area: areaCorrigida, tema: temaCorrigido } = fixAreaTema(tema.area, tema.tema);
+                    historico.push({
+                        id: Date.now(),
+                        temaId: tema.id,
+                        area: areaCorrigida,
+                        tema: temaCorrigido,
+                        rendimento: rendimento / 100,
+                        tempo: tempo,
+                        tempoIntervalo: tempoIntervalo,
+                        numeroIntervalos: numeroIntervalos,
+                        intervalos: intervalosTexto,
+                        tempoQuestoes: tempoQuestoes,
+                        quantQuestoes: quantQuestoes,
+                        quantQuestoesAcertos: quantQuestoesAcertos,
+                        tempoFlashcards: tempoFlashcards,
+                        quantFlashcards: quantFlashcards,
+                        questoes: questoesTexto,
+                        flashcards: quantFlashcards,
+                        data: dataSessao,
+                        observacoes: obs || '-',
+                        sugestao: sugestao || '-'
+                    });
+                    
+                    localStorage.setItem('vrvs_dados', JSON.stringify(dados));
+                    localStorage.setItem('vrvs_historico', JSON.stringify(historico));
+                    
+                    // Limpar formulário
+                    document.getElementById('feedbackForm').reset();
+                    document.getElementById('feedbackData').value = new Date().toISOString().split('T')[0];
+                    document.getElementById('feedbackNumeroIntervalos').value = '0';
+                    document.getElementById('feedbackIntervalos').value = '';
+                    document.getElementById('feedbackQuestoes').value = '';
+                    document.getElementById('feedbackFlashcards').value = '';
+                    const tempoQuestoesInput = document.getElementById('feedbackTempoQuestoes');
+                    const tempoFlashcardsInput = document.getElementById('feedbackTempoFlashcards');
+                    if (tempoQuestoesInput) tempoQuestoesInput.value = '';
+                    if (tempoFlashcardsInput) tempoFlashcardsInput.value = '';
+                    
+                    // Resetar cronômetro após salvar
+                    resetCronometro();
+                    
+                    // Fechar modal de confirmação
+                    closeConfirmarFeedbackModal();
+                    
+                    // NOTIFICAÇÃO DE SUCESSO!
+                    const proximaData = formatarData(tema.agenda);
+                    mostrarNotificacaoFeedback(`✅ Performance registrada!<br>📅 Próxima revisão: ${proximaData}`);
+                    
+                    // Atualizar todas as visualizações
+                    renderDados();
+                    renderTarefas();
+                    renderAgenda();
+                    renderPendencias();
+                    updateFeedbackSelect();
+                    renderHistorico();
+                    updateStats();
+                    
                 } catch (error) {
                     console.error('❌ Erro ao salvar feedback:', error);
                     mostrarNotificacaoFeedback('❌ Erro ao salvar feedback. Tente novamente.', 'error');
                     return false;
                 }
-            };
+            }
             
             // EDIT FORM
             document.getElementById('editForm').onsubmit = function(e) {

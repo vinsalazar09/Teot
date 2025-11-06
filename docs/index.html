@@ -5793,17 +5793,33 @@
                     }
                     
                     const tempoInput = document.getElementById('feedbackTempo');
-                    // Usar tempo do cronômetro se disponível, senão usar o input
-                    const tempo = cronometroSegundos > 0 ? obterTempoCronometroMinutos() : (parseInt(tempoInput.value) || 0);
+                    // Usar tempo do modal se disponível (ao encerrar sessão), senão usar cronômetro, senão usar input
+                    const modal = document.getElementById('encerrarSessaoModal');
+                    let tempo = 0;
+                    if (modal && modal.dataset.tempoSalvo) {
+                        // Tempo foi salvo do modal ao encerrar sessão
+                        tempo = Math.floor(parseInt(modal.dataset.tempoSalvo) / 60);
+                        tempoInput.value = tempo;
+                    } else if (cronometroSegundos > 0) {
+                        // Usar tempo do cronômetro se ainda estiver rodando
+                        tempo = obterTempoCronometroMinutos();
+                        tempoInput.value = tempo;
+                    } else {
+                        // Usar input manual
+                        tempo = parseInt(tempoInput.value) || 0;
+                    }
+                    
                     if (tempo <= 0) {
                         mostrarNotificacaoFeedback('⚠️ Preencha a duração da sessão!', 'error');
                         return false;
                     }
                     
-                    const tempoIntervalo = obterTempoIntervaloMinutos(); // Tempo de intervalo em minutos
-                    // Se usar cronômetro, atualizar o campo de input também
-                    if (cronometroSegundos > 0) {
-                        tempoInput.value = tempo;
+                    // Obter tempo de intervalo do modal ou calcular
+                    let tempoIntervalo = 0;
+                    if (modal && modal.dataset.intervalosSalvos) {
+                        tempoIntervalo = Math.floor(parseInt(modal.dataset.intervalosSalvos) / 60);
+                    } else {
+                        tempoIntervalo = obterTempoIntervaloMinutos();
                     }
                 
                 // Novos campos opcionais

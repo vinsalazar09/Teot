@@ -2095,6 +2095,20 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // ==================== PROTEÇÃO GLOBAL CONTRA ERROS ====================
+        // Garantir que splash screen sempre esconde, mesmo com erro JavaScript
+        window.addEventListener('error', function(e) {
+            console.error('❌ Erro JavaScript capturado:', e.error);
+            setTimeout(() => {
+                const splash = document.getElementById('splashScreen');
+                if (splash) {
+                    splash.style.display = 'none';
+                    splash.classList.add('hidden');
+                }
+                document.body.classList.remove('splash-loading');
+            }, 1000);
+        });
+        
         // ==================== DADOS E INICIALIZAÇÃO ====================
         // Função para corrigir inversão área↔tema ANTES de carregar dados
         function fixAreaTemaObjeto(obj) {

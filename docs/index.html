@@ -5853,13 +5853,8 @@
             } else {
                 console.log('✅ Formulário de feedback encontrado');
                 
-                // Remover qualquer listener anterior para evitar conflitos
-                const newForm = feedbackForm.cloneNode(true);
-                feedbackForm.parentNode.replaceChild(newForm, feedbackForm);
-                const feedbackFormFinal = document.getElementById('feedbackForm');
-                
-                // Adicionar listener de submit diretamente
-                feedbackFormFinal.addEventListener('submit', function(e) {
+                // Adicionar listener de submit diretamente (sem clonar para não perder listeners inline)
+                feedbackForm.addEventListener('submit', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
                     
@@ -5985,6 +5980,27 @@
                 });
                 
                 console.log('✅ Listener de submit adicionado ao formulário de feedback');
+                
+                // Garantir que o listener de área também está funcionando
+                const feedbackArea = document.getElementById('feedbackArea');
+                if (feedbackArea) {
+                    feedbackArea.removeEventListener('change', updateFeedbackTemaSelect);
+                    feedbackArea.addEventListener('change', updateFeedbackTemaSelect);
+                    console.log('✅ Listener de área atualizado');
+                }
+                
+                // FALLBACK: Adicionar listener direto no botão também (para garantir funcionamento no iPhone)
+                const submitBtn = feedbackForm.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.addEventListener('click', function(e) {
+                        console.log('🔘 Botão de submit clicado diretamente');
+                        // Não prevenir default aqui - deixar o form fazer o submit naturalmente
+                        // O listener do form vai capturar
+                    });
+                    console.log('✅ Listener de clique adicionado ao botão de submit');
+                } else {
+                    console.error('❌ Botão de submit não encontrado!');
+                }
             }
             
             // Função auxiliar para salvar feedback diretamente (fallback se modal não existir)

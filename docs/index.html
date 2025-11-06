@@ -8,16 +8,16 @@
     
     <!-- Favicon para MacBook e navegadores - múltiplos formatos e caminhos -->
     <link rel="icon" type="image/x-icon" href="./favicon.ico?v=2">
-    <link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
-    <link rel="shortcut icon" href="./favicon.ico?v=2" type="image/x-icon">
-    <link rel="shortcut icon" href="favicon.ico?v=2" type="image/x-icon">
-    <link rel="icon" type="image/png" sizes="32x32" href="./logo.png?v=2">
-    <link rel="icon" type="image/png" sizes="16x16" href="./logo.png?v=2">
-    <link rel="icon" type="image/png" href="./logo.png?v=2">
+    <link rel="icon" type="image/x-icon" href="favicon.ico?v=3">
+    <link rel="shortcut icon" href="./favicon.ico?v=3" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon.ico?v=3" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="./logo.png?v=3">
+    <link rel="icon" type="image/png" sizes="16x16" href="./logo.png?v=3">
+    <link rel="icon" type="image/png" href="./logo.png?v=3">
     
     <!-- Apple Touch Icon para iOS -->
-    <link rel="apple-touch-icon" sizes="180x180" href="./logo.png">
-    <link rel="apple-touch-icon" href="./logo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./logo.png?v=3">
+    <link rel="apple-touch-icon" href="./logo.png?v=3">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="VRVS">
@@ -970,6 +970,10 @@
             margin-bottom: 30px;
             animation: logoFloat 3s ease-in-out infinite;
             filter: drop-shadow(0 0 20px rgba(0, 255, 224, 0.3));
+            object-fit: contain;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
         
         @keyframes logoFloat {
@@ -1066,7 +1070,7 @@
 <body class="splash-loading">
     <!-- SPLASH SCREEN -->
     <div id="splashScreen">
-        <img src="logo.png" alt="VRVS Logo" class="splash-logo">
+        <img src="./logo.png?v=3" alt="VRVS Logo" class="splash-logo" onerror="this.onerror=null; this.src='./logo.jpeg?v=3';">
         <div class="splash-title">VRVS</div>
         <div class="splash-subtitle">Sistema de Revisão e Performance</div>
         <div class="splash-loader"></div>
@@ -4205,7 +4209,46 @@
         
         // ==================== INICIALIZAÇÃO ====================
         
+        // Garantir carregamento da logo no MacBook
+        function garantirLogoCarregada() {
+            const logoImg = document.querySelector('.splash-logo');
+            if (!logoImg) return;
+            
+            // Forçar recarregamento com timestamp único para evitar cache
+            const timestamp = new Date().getTime();
+            const logoPath = './logo.png?v=' + timestamp;
+            const logoFallback = './logo.jpeg?v=' + timestamp;
+            
+            // Criar nova imagem para testar
+            const testImg = new Image();
+            testImg.onload = function() {
+                logoImg.src = logoPath;
+            };
+            testImg.onerror = function() {
+                // Tentar fallback
+                const testFallback = new Image();
+                testFallback.onload = function() {
+                    logoImg.src = logoFallback;
+                };
+                testFallback.onerror = function() {
+                    console.warn('Logo não encontrada, usando fallback');
+                };
+                testFallback.src = logoFallback;
+            };
+            testImg.src = logoPath;
+        }
+        
+        // Executar quando DOM estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', garantirLogoCarregada);
+        } else {
+            garantirLogoCarregada();
+        }
+        
         window.onload = function() {
+            // Garantir logo novamente após carregamento completo
+            garantirLogoCarregada();
+            
             // Restaurar cronômetro se estava rodando antes
             restaurarCronometro();
             

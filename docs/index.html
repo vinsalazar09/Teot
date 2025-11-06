@@ -2470,7 +2470,15 @@
         }
         
         function renderDados() {
+            // SEMPRE recarregar dados do localStorage antes de renderizar (fix para iOS cache)
+            dados = JSON.parse(localStorage.getItem('vrvs_dados') || '[]');
+            if (Array.isArray(dados)) {
+                dados = dados.map(d => fixAreaTemaObjeto(d));
+            }
+            
             const tbody = document.getElementById('dadosTableBody');
+            if (!tbody) return;
+            
             tbody.innerHTML = dados.map(t => {
                 const ultEstudo = formatarDataBR(t.ultEstudo);
                 const agenda = formatarDataBR(t.agenda);
@@ -5232,7 +5240,20 @@
                         console.log('📱 Aba em segundo plano - cronômetro continua contando');
                     }
                 } else {
-                    // Aba voltou ao foco - restaurar e calcular tempo decorrido BASEADO EM TIMESTAMP ORIGINAL
+                    // Aba voltou ao foco - atualizar dados do localStorage (fix para iOS)
+                    dados = JSON.parse(localStorage.getItem('vrvs_dados') || '[]');
+                    if (Array.isArray(dados)) {
+                        dados = dados.map(d => fixAreaTemaObjeto(d));
+                    }
+                    historico = JSON.parse(localStorage.getItem('vrvs_historico') || '[]');
+                    
+                    // Se estiver na aba dados, atualizar a visualização
+                    const abaAtiva = document.querySelector('.section.active');
+                    if (abaAtiva && abaAtiva.id === 'dados') {
+                        renderDados();
+                    }
+                    
+                    // Restaurar e calcular tempo decorrido BASEADO EM TIMESTAMP ORIGINAL
                     const timestampOriginal = localStorage.getItem('vrvs_cronometro_timestamp');
                     const segundosOriginais = localStorage.getItem('vrvs_cronometro_segundos');
                     

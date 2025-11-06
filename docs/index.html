@@ -5843,7 +5843,13 @@
                     quantQuestoes = parseInt(partes[1]) || 0;
                 }
                 
-                // Se não tiver tempo de questões no box mas tiver no modal, usar do modal
+                // Extrair dados de flashcards
+                let quantFlashcards = 0;
+                if (flashcards > 0) {
+                    quantFlashcards = flashcards;
+                }
+                
+                // Se não tiver dados nos boxes mas tiver no modal, usar do modal
                 const modal = document.getElementById('encerrarSessaoModal');
                 if (tempoQuestoes === 0 && modal && modal.dataset.tempoQuestoes) {
                     tempoQuestoes = parseInt(modal.dataset.tempoQuestoes) || 0;

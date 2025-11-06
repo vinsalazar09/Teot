@@ -2104,48 +2104,51 @@
             let area = String(rawArea || '').trim().toLowerCase()
                 .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             
-            const areaMap = {
-                'trauma mmss': 'Trauma MMSS',
-                'trauma membros superiores': 'Trauma MMSS',
-                'trauma mmii': 'Trauma MMII',
-                'trauma membros inferiores': 'Trauma MMII',
+            // APENAS 3 ÁREAS VÁLIDAS
+            const areasValidas = {
                 'ombro e cotovelo': 'Ombro e Cotovelo',
-                'ombro': 'Ombro e Cotovelo',
-                'cotovelo': 'Ombro e Cotovelo',
-                'mao': 'Mão',
-                'punho': 'Mão',
-                'joelho': 'Joelho',
-                'quadril': 'Quadril',
-                'pelve': 'Quadril',
-                'pe e tornozelo': 'Pé e Tornozelo',
-                'tornozelo': 'Pé e Tornozelo',
-                'coluna': 'Coluna',
-                'oncologia': 'Oncologia',
-                'tumores': 'Oncologia'
+                'trauma mmss': 'Trauma MMSS',
+                'ortopedia pediatrica': 'Ortopedia Pediátrica',
+                'ortopedia pediátrica': 'Ortopedia Pediátrica'
             };
             
-            if (areaMap[area]) return areaMap[area];
-            return area.replace(/\b\w/g, m => m.toUpperCase());
+            // Verificar correspondência exata ou parcial
+            for (const [key, value] of Object.entries(areasValidas)) {
+                if (area === key || area.includes(key) || key.includes(area)) {
+                    return value;
+                }
+            }
+            
+            // Se não for uma área válida, retornar vazio
+            return '';
         }
         
         function fixAreaTema(area, tema) {
             if (!area || !tema) return { area: area || '', tema: tema || '' };
             
-            // Verificar se área e tema estão invertidos
-            // Se o "tema" parece ser uma área (contém palavras-chave de área)
-            const areaKeywords = ['trauma', 'ombro', 'cotovelo', 'mão', 'punho', 'joelho', 'quadril', 'pelve', 'pé', 'tornozelo', 'coluna', 'oncologia', 'tumores'];
-            const temaLower = String(tema).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const areaLower = String(area).toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const temaLower = String(tema).toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             
-            // Se tema contém palavras-chave de área e área não, provavelmente estão invertidos
-            const temaEhArea = areaKeywords.some(keyword => temaLower.includes(keyword));
-            const areaEhArea = areaKeywords.some(keyword => String(area).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(keyword));
+            // ÁREAS VÁLIDAS (apenas 3)
+            const areasValidas = ['ombro e cotovelo', 'trauma mmss', 'ortopedia pediatrica', 'ortopedia pediátrica'];
             
-            if (temaEhArea && !areaEhArea) {
-                // Estão invertidos, trocar
+            // Verificar se área é válida
+            const areaEhValida = areasValidas.some(a => areaLower === a || areaLower.includes(a) || a.includes(areaLower));
+            const temaEhArea = areasValidas.some(a => temaLower === a || temaLower.includes(a) || a.includes(temaLower));
+            
+            // Se tema parece ser área e área não é válida, estão invertidos
+            if (temaEhArea && !areaEhValida) {
                 return { area: normalizeArea(tema, ''), tema: area };
             }
             
-            return { area: normalizeArea(area, tema), tema: tema };
+            // Normalizar área para uma das 3 válidas
+            const areaNormalizada = normalizeArea(area, tema);
+            if (!areaNormalizada && temaEhArea) {
+                // Se área não normalizou mas tema é área válida, trocar
+                return { area: normalizeArea(tema, ''), tema: area };
+            }
+            
+            return { area: areaNormalizada || area, tema: tema };
         }
         
         function dataValida(data) {
@@ -2524,13 +2527,35 @@
                 // Aplicar correção de inversão área/tema
                 dados = dadosRaw.map(d => {
                     try {
-                        return fixAreaTemaObjeto(d);
+                        const corrigido = fixAreaTemaObjeto(d);
+                        // Aplicar fixAreaTema para garantir área/tema corretos
+                        const { area, tema } = fixAreaTema(corrigido.area || '', corrigido.tema || '');
+                        corrigido.area = area;
+                        corrigido.tema = tema;
+                        return corrigido;
                     } catch (e) {
                         console.error('❌ Erro ao corrigir objeto:', d, e);
                         return d; // Retornar objeto original se houver erro
                     }
                 }).filter(d => d && d.tema && d.tema.trim() !== ''); // Filtrar apenas objetos válidos com tema
             }
+            
+            // REMOVER DUPLICATAS: manter apenas o primeiro tema com mesma área+tema
+            const temasUnicos = [];
+            const chavesVistas = new Set();
+            dados.forEach(t => {
+                const chave = `${String(t.area).toLowerCase().trim()}_${String(t.tema).toLowerCase().trim()}`;
+                if (!chavesVistas.has(chave)) {
+                    chavesVistas.add(chave);
+                    temasUnicos.push(t);
+                } else {
+                    console.log(`⚠️ Removendo duplicata: ${t.area} - ${t.tema}`);
+                }
+            });
+            dados = temasUnicos;
+            
+            // Salvar dados limpos
+            localStorage.setItem('vrvs_dados', JSON.stringify(dados));
             
             // Atualizar variável global
             window.dados = dados;
@@ -2541,7 +2566,7 @@
                 return;
             }
             
-            console.log(`📊 Renderizando ${dados.length} temas na aba Dados`);
+            console.log(`📊 Renderizando ${dados.length} temas únicos na aba Dados`);
             
             tbody.innerHTML = dados.map(t => {
                 const ultEstudo = formatarDataBR(t.ultEstudo);
@@ -2573,148 +2598,8 @@
             }
         }
         
-        // Função para sincronizar dados dos temas com base no histórico
-        function sincronizarDadosDoHistorico() {
-            // Recarregar dados e histórico do localStorage
-            dados = JSON.parse(localStorage.getItem('vrvs_dados') || '[]');
-            if (Array.isArray(dados)) {
-                dados = dados.map(d => fixAreaTemaObjeto(d));
-            }
-            historico = JSON.parse(localStorage.getItem('vrvs_historico') || '[]');
-            
-            if (!Array.isArray(historico) || historico.length === 0) {
-                console.log('📊 Nenhum histórico para sincronizar');
-                return; // Não há histórico para sincronizar
-            }
-            
-            console.log(`📊 Sincronizando ${historico.length} registros do histórico com ${dados.length} temas`);
-            
-            // Agrupar histórico por temaId E por área/tema (para criar temas que não existem)
-            const historicoPorTema = {};
-            const historicoPorAreaTema = {}; // Para criar temas que não existem
-            
-            historico.forEach(h => {
-                const temaId = String(h.temaId || h.id || '');
-                const chaveAreaTema = `${h.area || ''}_${h.tema || ''}`;
-                
-                // Agrupar por temaId
-                if (temaId && temaId !== 'undefined') {
-                    if (!historicoPorTema[temaId]) {
-                        historicoPorTema[temaId] = [];
-                    }
-                    historicoPorTema[temaId].push(h);
-                }
-                
-                // Agrupar por área/tema para criar temas que não existem
-                if (h.area && h.tema && chaveAreaTema !== '_') {
-                    if (!historicoPorAreaTema[chaveAreaTema]) {
-                        historicoPorAreaTema[chaveAreaTema] = [];
-                    }
-                    historicoPorAreaTema[chaveAreaTema].push(h);
-                }
-            });
-            
-            // Criar temas que não existem mas têm histórico
-            let temasCriados = 0;
-            Object.keys(historicoPorAreaTema).forEach(chave => {
-                const sessoesTema = historicoPorAreaTema[chave];
-                const primeiraSessao = sessoesTema[0];
-                const area = primeiraSessao.area;
-                const tema = primeiraSessao.tema;
-                
-                // Verificar se já existe um tema com essa área e tema
-                const temaExistente = dados.find(t => 
-                    String(t.area).toLowerCase().trim() === String(area).toLowerCase().trim() &&
-                    String(t.tema).toLowerCase().trim() === String(tema).toLowerCase().trim()
-                );
-                
-                if (!temaExistente && area && tema) {
-                    // Criar novo tema a partir do histórico
-                    const sessoes = sessoesTema.length;
-                    const somaRendimento = sessoesTema.reduce((sum, h) => sum + (h.rendimento || 0), 0);
-                    const rendimentoMedio = somaRendimento / sessoes;
-                    const somaTempo = sessoesTema.reduce((sum, h) => sum + (h.tempo || 0), 0);
-                    
-                    const ultimaSessao = sessoesTema.sort((a, b) => {
-                        const dataA = new Date(a.data || 0);
-                        const dataB = new Date(b.data || 0);
-                        return dataB - dataA;
-                    })[0];
-                    
-                    const novoTema = {
-                        id: Date.now() + Math.random(), // ID único
-                        area: normalizeArea(area, tema),
-                        tema: tema,
-                        status: 'Em estudo',
-                        prioridade: 3,
-                        dificuldade: 'Média',
-                        rendimento: rendimentoMedio,
-                        sessoes: sessoes,
-                        ultEstudo: ultimaSessao.data || '',
-                        agenda: ultimaSessao.data ? calcularProximaRevisao({ rendimento: rendimentoMedio, sessoes: sessoes }, ultimaSessao.data) : '',
-                        tempo: somaTempo,
-                        observacoes: '',
-                        contador80: sessoesTema.filter(h => (h.rendimento || 0) >= 0.8).length,
-                        sugestao: ultimaSessao.sugestao || ''
-                    };
-                    
-                    dados.push(novoTema);
-                    temasCriados++;
-                    console.log(`➕ Criado tema: ${area} - ${tema}`);
-                }
-            });
-            
-            // Atualizar cada tema existente com base no seu histórico
-            let atualizados = 0;
-            dados.forEach(tema => {
-                const temaId = String(tema.id);
-                const sessoesTema = historicoPorTema[temaId] || [];
-                
-                // Se não encontrou por ID, tentar por área/tema
-                if (sessoesTema.length === 0) {
-                    const chaveAreaTema = `${tema.area || ''}_${tema.tema || ''}`;
-                    const sessoesPorAreaTema = historicoPorAreaTema[chaveAreaTema] || [];
-                    if (sessoesPorAreaTema.length > 0) {
-                        sessoesTema.push(...sessoesPorAreaTema);
-                    }
-                }
-                
-                if (sessoesTema.length > 0) {
-                    // Calcular estatísticas do histórico
-                    const sessoes = sessoesTema.length;
-                    const somaRendimento = sessoesTema.reduce((sum, h) => sum + (h.rendimento || 0), 0);
-                    const rendimentoMedio = somaRendimento / sessoes;
-                    const somaTempo = sessoesTema.reduce((sum, h) => sum + (h.tempo || 0), 0);
-                    
-                    // Encontrar última sessão
-                    const ultimaSessao = sessoesTema.sort((a, b) => {
-                        const dataA = new Date(a.data || 0);
-                        const dataB = new Date(b.data || 0);
-                        return dataB - dataA;
-                    })[0];
-                    
-                    // Atualizar tema sempre (forçar atualização)
-                    tema.sessoes = sessoes;
-                    tema.rendimento = rendimentoMedio;
-                    tema.tempo = somaTempo;
-                    tema.ultEstudo = ultimaSessao.data || tema.ultEstudo;
-                    if (ultimaSessao.data) {
-                        tema.agenda = calcularProximaRevisao(tema, ultimaSessao.data);
-                    }
-                    tema.status = sessoes > 0 ? 'Em estudo' : tema.status;
-                    atualizados++;
-                }
-            });
-            
-            if (temasCriados > 0 || atualizados > 0) {
-                localStorage.setItem('vrvs_dados', JSON.stringify(dados));
-                console.log(`🔄 Sincronizados ${atualizados} temas e criados ${temasCriados} novos temas com base no histórico`);
-                renderDados();
-                updateFeedbackSelect();
-            } else {
-                console.log('📊 Nenhum tema precisou ser atualizado');
-            }
-        }
+        // REMOVIDO: Função que criava temas duplicados do histórico
+        // A aba Dados mostra apenas temas cadastrados, não sessões do histórico
         
         function updateFeedbackSelect() {
             // Recarregar dados do localStorage antes de atualizar selects

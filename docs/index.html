@@ -1500,6 +1500,9 @@
                         <button class="btn" onclick="salvarDadosManualmente()" style="background: rgba(0, 206, 209, 0.15); color: rgba(0, 206, 209, 0.8); border: 1px solid rgba(0, 206, 209, 0.3); font-weight: 500;">
                             💾 SALVAR DADOS AGORA
                         </button>
+                        <button class="btn" onclick="sincronizarDadosDoHistorico(); mostrarNotificacaoFeedback('🔄 Sincronização concluída! Verifique os dados atualizados.', 3000);" style="background: rgba(255, 127, 80, 0.15); color: rgba(255, 127, 80, 0.9); border: 1px solid rgba(255, 127, 80, 0.3); font-weight: 500;">
+                            🔄 SINCRONIZAR COM HISTÓRICO
+                        </button>
                         <div style="font-size: 11px; color: rgba(0,206,209,0.7);">
                             💡 Salva tudo automaticamente no navegador
                         </div>
@@ -2539,24 +2542,101 @@
             historico = JSON.parse(localStorage.getItem('vrvs_historico') || '[]');
             
             if (!Array.isArray(historico) || historico.length === 0) {
+                console.log('📊 Nenhum histórico para sincronizar');
                 return; // Não há histórico para sincronizar
             }
             
-            // Agrupar histórico por temaId
+            console.log(`📊 Sincronizando ${historico.length} registros do histórico com ${dados.length} temas`);
+            
+            // Agrupar histórico por temaId E por área/tema (para criar temas que não existem)
             const historicoPorTema = {};
+            const historicoPorAreaTema = {}; // Para criar temas que não existem
+            
             historico.forEach(h => {
-                const temaId = String(h.temaId || h.id);
-                if (!historicoPorTema[temaId]) {
-                    historicoPorTema[temaId] = [];
+                const temaId = String(h.temaId || h.id || '');
+                const chaveAreaTema = `${h.area || ''}_${h.tema || ''}`;
+                
+                // Agrupar por temaId
+                if (temaId && temaId !== 'undefined') {
+                    if (!historicoPorTema[temaId]) {
+                        historicoPorTema[temaId] = [];
+                    }
+                    historicoPorTema[temaId].push(h);
                 }
-                historicoPorTema[temaId].push(h);
+                
+                // Agrupar por área/tema para criar temas que não existem
+                if (h.area && h.tema && chaveAreaTema !== '_') {
+                    if (!historicoPorAreaTema[chaveAreaTema]) {
+                        historicoPorAreaTema[chaveAreaTema] = [];
+                    }
+                    historicoPorAreaTema[chaveAreaTema].push(h);
+                }
             });
             
-            // Atualizar cada tema com base no seu histórico
+            // Criar temas que não existem mas têm histórico
+            let temasCriados = 0;
+            Object.keys(historicoPorAreaTema).forEach(chave => {
+                const sessoesTema = historicoPorAreaTema[chave];
+                const primeiraSessao = sessoesTema[0];
+                const area = primeiraSessao.area;
+                const tema = primeiraSessao.tema;
+                
+                // Verificar se já existe um tema com essa área e tema
+                const temaExistente = dados.find(t => 
+                    String(t.area).toLowerCase().trim() === String(area).toLowerCase().trim() &&
+                    String(t.tema).toLowerCase().trim() === String(tema).toLowerCase().trim()
+                );
+                
+                if (!temaExistente && area && tema) {
+                    // Criar novo tema a partir do histórico
+                    const sessoes = sessoesTema.length;
+                    const somaRendimento = sessoesTema.reduce((sum, h) => sum + (h.rendimento || 0), 0);
+                    const rendimentoMedio = somaRendimento / sessoes;
+                    const somaTempo = sessoesTema.reduce((sum, h) => sum + (h.tempo || 0), 0);
+                    
+                    const ultimaSessao = sessoesTema.sort((a, b) => {
+                        const dataA = new Date(a.data || 0);
+                        const dataB = new Date(b.data || 0);
+                        return dataB - dataA;
+                    })[0];
+                    
+                    const novoTema = {
+                        id: Date.now() + Math.random(), // ID único
+                        area: normalizeArea(area, tema),
+                        tema: tema,
+                        status: 'Em estudo',
+                        prioridade: 3,
+                        dificuldade: 'Média',
+                        rendimento: rendimentoMedio,
+                        sessoes: sessoes,
+                        ultEstudo: ultimaSessao.data || '',
+                        agenda: ultimaSessao.data ? calcularProximaRevisao({ rendimento: rendimentoMedio, sessoes: sessoes }, ultimaSessao.data) : '',
+                        tempo: somaTempo,
+                        observacoes: '',
+                        contador80: sessoesTema.filter(h => (h.rendimento || 0) >= 0.8).length,
+                        sugestao: ultimaSessao.sugestao || ''
+                    };
+                    
+                    dados.push(novoTema);
+                    temasCriados++;
+                    console.log(`➕ Criado tema: ${area} - ${tema}`);
+                }
+            });
+            
+            // Atualizar cada tema existente com base no seu histórico
             let atualizados = 0;
             dados.forEach(tema => {
                 const temaId = String(tema.id);
                 const sessoesTema = historicoPorTema[temaId] || [];
+                
+                // Se não encontrou por ID, tentar por área/tema
+                if (sessoesTema.length === 0) {
+                    const chaveAreaTema = `${tema.area || ''}_${tema.tema || ''}`;
+                    const sessoesPorAreaTema = historicoPorAreaTema[chaveAreaTema] || [];
+                    if (sessoesPorAreaTema.length > 0) {
+                        sessoesTema.push(...sessoesPorAreaTema);
+                    }
+                }
                 
                 if (sessoesTema.length > 0) {
                     // Calcular estatísticas do histórico
@@ -2572,28 +2652,26 @@
                         return dataB - dataA;
                     })[0];
                     
-                    // Atualizar tema apenas se os dados estiverem diferentes
-                    if (tema.sessoes !== sessoes || 
-                        Math.abs((tema.rendimento || 0) - rendimentoMedio) > 0.01 ||
-                        tema.tempo !== somaTempo ||
-                        tema.ultEstudo !== ultimaSessao.data) {
-                        tema.sessoes = sessoes;
-                        tema.rendimento = rendimentoMedio;
-                        tema.tempo = somaTempo;
-                        tema.ultEstudo = ultimaSessao.data;
-                        if (ultimaSessao.data) {
-                            tema.agenda = calcularProximaRevisao(tema, ultimaSessao.data);
-                        }
-                        tema.status = sessoes > 0 ? 'Em estudo' : tema.status;
-                        atualizados++;
+                    // Atualizar tema sempre (forçar atualização)
+                    tema.sessoes = sessoes;
+                    tema.rendimento = rendimentoMedio;
+                    tema.tempo = somaTempo;
+                    tema.ultEstudo = ultimaSessao.data || tema.ultEstudo;
+                    if (ultimaSessao.data) {
+                        tema.agenda = calcularProximaRevisao(tema, ultimaSessao.data);
                     }
+                    tema.status = sessoes > 0 ? 'Em estudo' : tema.status;
+                    atualizados++;
                 }
             });
             
-            if (atualizados > 0) {
+            if (temasCriados > 0 || atualizados > 0) {
                 localStorage.setItem('vrvs_dados', JSON.stringify(dados));
-                console.log(`🔄 Sincronizados ${atualizados} temas com base no histórico`);
+                console.log(`🔄 Sincronizados ${atualizados} temas e criados ${temasCriados} novos temas com base no histórico`);
                 renderDados();
+                updateFeedbackSelect();
+            } else {
+                console.log('📊 Nenhum tema precisou ser atualizado');
             }
         }
         
@@ -3573,7 +3651,11 @@
             document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
             event.target.classList.add('active');
-            if (sectionId === 'dados') renderDados();
+            if (sectionId === 'dados') {
+                renderDados();
+                // Sincronizar com histórico ao abrir aba Dados (para garantir dados atualizados)
+                setTimeout(() => sincronizarDadosDoHistorico(), 100);
+            }
             if (sectionId === 'tarefa') renderTarefas();
             if (sectionId === 'agenda') renderAgenda();
             if (sectionId === 'stats') updateStats();

@@ -4555,21 +4555,27 @@
             document.getElementById('modalQuantFlashcards').value = '';
             
             // ZERAR CRONÔMETRO COMPLETAMENTE após salvar o tempo
-            cronometroSegundos = tempoFinalSalvo; // Manter o tempo salvo para uso no feedback
-            tempoTotalIntervalo = 0; // Manter intervalo total para exibição
+            // Manter o tempo salvo em variável separada para uso no feedback
+            const tempoParaFeedback = tempoFinalSalvo;
+            const intervalosParaFeedback = tempoTotalIntervalo;
+            
+            // Zerar cronômetro completamente (não continua rodando)
+            cronometroSegundos = 0;
+            tempoTotalIntervalo = 0;
+            intervalosIndividuais = [];
             // Limpar timestamps e estado do cronômetro
             localStorage.removeItem('vrvs_cronometro');
             localStorage.removeItem('vrvs_cronometro_timestamp');
             localStorage.removeItem('vrvs_cronometro_segundos');
             
-            // Atualizar display do cronômetro para mostrar tempo final
-            document.getElementById('cronometroDisplay').textContent = formatarTempoCronometro(tempoFinalSalvo);
-            if (tempoTotalIntervalo > 0) {
-                document.getElementById('tempoIntervaloTotal').style.display = 'block';
-                document.getElementById('tempoIntervaloTotalDisplay').textContent = formatarTempoCronometro(tempoTotalIntervalo);
-            } else {
-                document.getElementById('tempoIntervaloTotal').style.display = 'none';
-            }
+            // Atualizar display do cronômetro para mostrar 00:00:00
+            document.getElementById('cronometroDisplay').textContent = '00:00:00';
+            document.getElementById('tempoIntervaloTotal').style.display = 'none';
+            
+            // Guardar tempo salvo no modal para uso no feedback
+            const modal = document.getElementById('encerrarSessaoModal');
+            modal.dataset.tempoSalvo = tempoParaFeedback;
+            modal.dataset.intervalosSalvos = intervalosParaFeedback;
             
             // Mostrar modal
             document.getElementById('encerrarSessaoModal').classList.add('active');
@@ -5826,15 +5832,14 @@
                 if (tempoQuestoes === 0 && modal && modal.dataset.tempoQuestoes) {
                     tempoQuestoes = parseInt(modal.dataset.tempoQuestoes) || 0;
                 }
-                
-                // Extrair dados de flashcards
-                let quantFlashcards = 0;
-                if (flashcards > 0) {
-                    quantFlashcards = flashcards;
-                    // Se não tiver tempo de flashcards no box mas tiver no modal, usar do modal
-                    if (tempoFlashcards === 0 && modal && modal.dataset.tempoFlashcards) {
-                        tempoFlashcards = parseInt(modal.dataset.tempoFlashcards) || 0;
-                    }
+                if (tempoFlashcards === 0 && modal && modal.dataset.tempoFlashcards) {
+                    tempoFlashcards = parseInt(modal.dataset.tempoFlashcards) || 0;
+                }
+                if (quantQuestoes === 0 && modal && modal.dataset.quantQuestoes) {
+                    quantQuestoes = parseInt(modal.dataset.quantQuestoes) || 0;
+                }
+                if (quantFlashcards === 0 && modal && modal.dataset.quantFlashcards) {
+                    quantFlashcards = parseInt(modal.dataset.quantFlashcards) || 0;
                 }
                 
                 const sugestao = document.getElementById('feedbackSugestao').value.trim();

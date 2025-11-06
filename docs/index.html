@@ -3427,7 +3427,10 @@
                 promises.push(parseCSV(historicoFile).then(historicoCSV => {
                     historico = historicoCSV.map(h => {
                         if (!h.id) h.id = Date.now() + Math.random();
-                        h.area = normalizeArea(h.area, h.tema);
+                        // Normalizar área/tema corretamente
+                        const { area, tema } = fixAreaTema(h.area || '', h.tema || '');
+                        h.area = area;
+                        h.tema = tema;
                         if (h.rendimento > 1) h.rendimento = h.rendimento / 100;
                         h.tempo = parseInt(h.tempo) || 0;
                         if (!h.data || h.data === '-') {
@@ -3442,6 +3445,8 @@
                         return h;
                     });
                     localStorage.setItem('vrvs_historico', JSON.stringify(historico));
+                    // Atualizar variável global
+                    window.historico = historico;
                     return 'historico';
                 }));
             }
@@ -3451,10 +3456,15 @@
                     // CORREÇÃO: Limpar histórico inválido após importação
                     limparHistoricoInvalido();
                     
+                    // Atualizar variável global de histórico
+                    historico = JSON.parse(localStorage.getItem('vrvs_historico') || '[]');
+                    
                     const msg = results.map(r => r === 'dados' ? 'Dados' : 'Histórico').join(' e ');
                     mostrarNotificacaoFeedback(`✅ ${msg} importados com sucesso!`);
                     document.getElementById('importDados').value = '';
                     document.getElementById('importHistorico').value = '';
+                    
+                    // Re-renderizar TUDO após importação
                     renderDados();
                     renderTarefas();
                     renderAgenda();

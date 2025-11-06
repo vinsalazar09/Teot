@@ -6026,14 +6026,26 @@
                 
                 console.log('✅ Listener de submit adicionado ao formulário de feedback');
                 
-                // FALLBACK: Adicionar listener direto no botão também (para garantir funcionamento no iPhone)
+                // FALLBACK CRÍTICO: Adicionar listener direto no botão (para garantir funcionamento no iPhone)
                 const submitBtn = feedbackFormFinal.querySelector('button[type="submit"]');
                 if (submitBtn) {
-                    submitBtn.addEventListener('click', function(e) {
-                        console.log('🔘 Botão de submit clicado diretamente');
-                        // Não prevenir default aqui - deixar o form fazer o submit naturalmente
-                        // O listener do form vai capturar
-                    });
+                    // Remover qualquer listener anterior
+                    const newBtn = submitBtn.cloneNode(true);
+                    submitBtn.parentNode.replaceChild(newBtn, submitBtn);
+                    const submitBtnFinal = feedbackFormFinal.querySelector('button[type="submit"]');
+                    
+                    // Adicionar listener de clique direto no botão
+                    submitBtnFinal.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('🔘 Botão de submit clicado diretamente - disparando submit do form');
+                        
+                        // Disparar submit do formulário manualmente
+                        if (feedbackFormFinal) {
+                            feedbackFormFinal.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                        }
+                    }, { passive: false });
+                    
                     console.log('✅ Listener de clique adicionado ao botão de submit');
                 } else {
                     console.error('❌ Botão de submit não encontrado!');

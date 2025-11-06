@@ -6545,18 +6545,32 @@
                 renderLembretes();
             };
             
-            // Inicializações
-            renderTarefas();
-            renderAgenda();
-            renderDados();
-            renderPendencias();
-            updateFeedbackSelect();
-            updateStats();
-            renderHistorico();
-            atualizarSelectsLembrete();
-            renderLembretes();
-            atualizarSelectsCaderno();
-            renderCaderno();
+            // Inicializações (com proteção contra erros)
+            try {
+                if (typeof renderTarefas === 'function') renderTarefas();
+                if (typeof renderAgenda === 'function') renderAgenda();
+                if (typeof renderDados === 'function') renderDados();
+                if (typeof renderPendencias === 'function') renderPendencias();
+                if (typeof updateFeedbackSelect === 'function') updateFeedbackSelect();
+                if (typeof updateStats === 'function') updateStats();
+                if (typeof renderHistorico === 'function') renderHistorico();
+                if (typeof atualizarSelectsLembrete === 'function') atualizarSelectsLembrete();
+                if (typeof renderLembretes === 'function') renderLembretes();
+                if (typeof atualizarSelectsCaderno === 'function') atualizarSelectsCaderno();
+                if (typeof renderCaderno === 'function') renderCaderno();
+            } catch (error) {
+                console.error('❌ Erro ao inicializar:', error);
+            }
+            
+            // GARANTIR que splash screen seja escondido mesmo com erro
+            setTimeout(() => {
+                const splash = document.getElementById('splashScreen');
+                if (splash) {
+                    splash.style.display = 'none';
+                    splash.classList.add('hidden');
+                }
+                document.body.classList.remove('splash-loading');
+            }, 3000);
         };
     </script>
 </body>

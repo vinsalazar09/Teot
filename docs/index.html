@@ -5744,18 +5744,48 @@
                 }
             }, 30000); // Salvar a cada 30 segundos
             
-            // Registrar Service Worker para funcionamento offline
+            // Registrar Service Worker para funcionamento offline e atualizações automáticas
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then((registration) => {
                     console.log('✅ Service Worker registrado com sucesso:', registration.scope);
                     
-                    // Verificar atualizações periodicamente
+                    // Detectar quando há nova versão disponível
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        if (newWorker) {
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // Nova versão disponível!
+                                    console.log('🔄 Nova versão disponível! Atualizando...');
+                                    mostrarNotificacaoFeedback('🔄 Nova versão disponível! Atualizando automaticamente...', 'success');
+                                    
+                                    // Forçar atualização imediata
+                                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                    
+                                    // Recarregar página após 2 segundos para aplicar atualização
+                                    setTimeout(() => {
+                                        window.location.reload();
+                                    }, 2000);
+                                }
+                            });
+                        }
+                    });
+                    
+                    // Verificar atualizações periodicamente (a cada 30 segundos)
                     setInterval(() => {
                         registration.update();
-                    }, 60000); // Verificar a cada minuto
+                    }, 30000);
                     
-                    // Forçar atualização ao carregar
+                    // Verificar atualização ao carregar página
                     registration.update();
+                    
+                    // Verificar atualização quando página volta ao foco (útil para iPhone)
+                    document.addEventListener('visibilitychange', () => {
+                        if (!document.hidden) {
+                            registration.update();
+                        }
+                    });
+                    
                 }).catch((error) => {
                     console.log('⚠️ Erro ao registrar Service Worker:', error);
                 });

@@ -1,5 +1,6 @@
 // Service Worker para VRVS - Funcionamento Offline
-const CACHE_NAME = "vrvs-v5.4.0";
+// ATUALIZAR ESTA VERSÃO SEMPRE QUE FIZER MUDANÇAS PARA FORÇAR ATUALIZAÇÃO
+const CACHE_NAME = "vrvs-v5.5.0";
 
 // Arquivos essenciais para cache
 const FILES_TO_CACHE = [
@@ -12,19 +13,20 @@ const FILES_TO_CACHE = [
 
 // Instalar Service Worker
 self.addEventListener('install', (event) => {
-    console.log('[Service Worker] Instalando...');
+    console.log('[Service Worker] Instalando versão:', CACHE_NAME);
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             console.log('[Service Worker] Fazendo cache dos arquivos');
             return cache.addAll(FILES_TO_CACHE);
         })
     );
+    // Forçar ativação imediata para atualizações
     self.skipWaiting();
 });
 
 // Ativar Service Worker
 self.addEventListener('activate', (event) => {
-    console.log('[Service Worker] Ativando...');
+    console.log('[Service Worker] Ativando versão:', CACHE_NAME);
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
@@ -37,6 +39,7 @@ self.addEventListener('activate', (event) => {
             );
         })
     );
+    // Garantir controle imediato de todas as páginas
     return self.clients.claim();
 });
 
@@ -54,10 +57,10 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // ESTRATÉGIA: Network-first para HTML (força atualização)
+    // ESTRATÉGIA: Network-first para HTML (força atualização sempre)
     if (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) {
         event.respondWith(
-            fetch(event.request).then((response) => {
+            fetch(event.request, { cache: 'no-store' }).then((response) => {
                 // Se conseguiu buscar da rede, atualizar cache
                 if (response && response.status === 200) {
                     const responseToCache = response.clone();
@@ -76,31 +79,27 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Para outros arquivos, usar cache-first
+    // Para outros arquivos, usar cache-first mas verificar atualização
     event.respondWith(
         caches.match(event.request).then((response) => {
-            // Retornar do cache se disponível
-            if (response) {
-                return response;
-            }
-
-            // Buscar da rede
-            return fetch(event.request).then((response) => {
-                // Se falhar ou não for sucesso, retornar como está
-                if (!response || response.status !== 200 || response.type !== 'basic') {
+            // Buscar da rede primeiro para verificar atualizações
+            return fetch(event.request).then((networkResponse) => {
+                // Se conseguiu da rede e é sucesso, atualizar cache
+                if (networkResponse && networkResponse.status === 200) {
+                    const responseToCache = networkResponse.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseToCache);
+                    });
+                    return networkResponse;
+                }
+                // Se não conseguiu da rede, usar cache se disponível
+                return response || networkResponse;
+            }).catch(() => {
+                // Se offline, usar cache se disponível
+                if (response) {
                     return response;
                 }
-
-                // Clonar resposta para cache
-                const responseToCache = response.clone();
-
-                caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(event.request, responseToCache);
-                });
-
-                return response;
-            }).catch(() => {
-                // Se offline e for página HTML, retornar index.html do cache
+                // Se for HTML e offline, retornar index.html
                 if (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) {
                     return caches.match('./index.html');
                 }
@@ -120,5 +119,12 @@ async function syncData() {
     // Aqui você pode adicionar lógica para sincronizar dados quando voltar online
     console.log('[Service Worker] Sincronizando dados...');
 }
+
+// Mensagem para notificar atualização disponível
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
 
 

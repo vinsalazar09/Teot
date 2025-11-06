@@ -1648,16 +1648,22 @@
                             <label class="form-label">Duração (min)</label>
                             <input type="number" class="form-input" id="feedbackTempo" min="0" placeholder="Minutos" required>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">📊 Intervalos (opcional)</label>
-                            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px;">
-                                <input type="number" class="form-input" id="feedbackNumeroIntervalos" min="0" placeholder="Número de pausas" value="0">
-                                <input type="text" class="form-input" id="feedbackIntervalos" placeholder="Ex: 00:05:00, 00:03:30" style="font-size: 12px;">
-                            </div>
-                            <div style="font-size: 11px; color: rgba(0,206,209,0.7); margin-top: 5px;">
-                                💡 Use o botão "Encerrar Sessão" no cronômetro para preencher automaticamente
+                        
+                        <!-- Boxes discretos de tempo para questões e flashcards -->
+                        <div class="form-group" style="background: rgba(0,206,209,0.05); padding: 12px; border-radius: 8px; border: 1px solid rgba(0,206,209,0.15);">
+                            <div style="font-size: 11px; color: rgba(0,206,209,0.7); margin-bottom: 10px;">⏱️ Tempo por atividade (opcional)</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div>
+                                    <label style="font-size: 11px; color: rgba(255,255,255,0.6); display: block; margin-bottom: 4px;">❓ Tempo Questões (min)</label>
+                                    <input type="number" class="form-input" id="feedbackTempoQuestoes" min="0" placeholder="0" style="font-size: 12px; padding: 6px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 11px; color: rgba(255,255,255,0.6); display: block; margin-bottom: 4px;">🃏 Tempo Flashcards (min)</label>
+                                    <input type="number" class="form-input" id="feedbackTempoFlashcards" min="0" placeholder="0" style="font-size: 12px; padding: 6px;">
+                                </div>
                             </div>
                         </div>
+                        
                         <div class="form-group">
                             <label class="form-label">❓ Questões (opcional)</label>
                             <input type="text" class="form-input" id="feedbackQuestoes" placeholder="Ex: 15/20 (acertos/total)" pattern="[0-9]+/[0-9]+">
@@ -1690,6 +1696,19 @@
             <div id="stats" class="section">
                 <div class="card">
                     <div class="card-title">📊 ANALYTICS</div>
+                    
+                    <!-- Filtros de tempo -->
+                    <div style="margin-bottom: 20px; padding: 15px; background: rgba(0,206,209,0.05); border-radius: 8px; border: 1px solid rgba(0,206,209,0.2);">
+                        <div style="font-size: 12px; color: rgba(0,206,209,0.8); margin-bottom: 10px; font-weight: 500;">⏱️ Filtrar por Período</div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                            <input type="date" id="statsDataInicio" class="form-input" style="flex: 1; min-width: 140px; font-size: 12px; padding: 8px;">
+                            <input type="date" id="statsDataFim" class="form-input" style="flex: 1; min-width: 140px; font-size: 12px; padding: 8px;">
+                            <button class="btn btn-small" onclick="filtrarStatsSemanaAtual()" style="font-size: 11px; padding: 8px 12px;">📅 Semana</button>
+                            <button class="btn btn-small" onclick="filtrarStatsMesAtual()" style="font-size: 11px; padding: 8px 12px;">📆 Mês</button>
+                            <button class="btn btn-small btn-secondary" onclick="aplicarFiltroStats()" style="font-size: 11px; padding: 8px 12px;">Aplicar</button>
+                        </div>
+                    </div>
+                    
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-value" id="statTemas">0</div>
@@ -2287,13 +2306,23 @@
         }
         
         function renderTarefas() {
-            const hoje = new Date().toISOString().split('T')[0];
+            const hoje = new Date();
+            const hojeStr = hoje.toISOString().split('T')[0];
             
+            // Calcular data limite: 7 dias atrás
+            const dataLimite = new Date(hoje);
+            dataLimite.setDate(hoje.getDate() - 7);
+            const dataLimiteStr = dataLimite.toISOString().split('T')[0];
+            
+            // Filtrar: só hoje e até 7 dias acumulados (não futuras)
             const tarefas = dados.filter(t => {
                 if (!t.agenda || !t.tema) return false;
                 if (t.status !== 'Em estudo' && t.status !== 'Planejado') return false;
                 if (!dataValida(t.agenda)) return false;
-                return t.agenda <= hoje;
+                
+                // Só atividades de hoje ou até 7 dias atrás (acumuladas)
+                // NÃO mostrar atividades futuras (essas vão para agenda)
+                return t.agenda >= dataLimiteStr && t.agenda <= hojeStr;
             });
             
             const container = document.getElementById('tarefasContainer');
@@ -2302,8 +2331,11 @@
                 return;
             }
             
+            // Ordenar: hoje primeiro, depois por data (mais recente primeiro)
             tarefas.sort((a, b) => {
-                if (a.agenda !== b.agenda) return a.agenda.localeCompare(b.agenda);
+                if (a.agenda === hojeStr && b.agenda !== hojeStr) return -1;
+                if (a.agenda !== hojeStr && b.agenda === hojeStr) return 1;
+                if (a.agenda !== b.agenda) return b.agenda.localeCompare(a.agenda); // Mais recente primeiro
                 return (b.prioridade || 0) - (a.prioridade || 0);
             });
             
@@ -2364,30 +2396,42 @@
         }
         
         function renderAgenda() {
-            const hoje = new Date().toISOString().split('T')[0];
+            const hoje = new Date();
+            const hojeStr = hoje.toISOString().split('T')[0];
             
-            // Período: inputs ou default próximos 7 dias
+            // Calcular semana atual (segunda a domingo)
+            const diaSemana = hoje.getDay(); // 0=Dom, 1=Seg, ...
+            const segunda = new Date(hoje);
+            const domingo = new Date(hoje);
+            const offsetSeg = (diaSemana === 0 ? -6 : 1 - diaSemana);
+            segunda.setDate(hoje.getDate() + offsetSeg);
+            domingo.setDate(segunda.getDate() + 6);
+            const segundaStr = segunda.toISOString().split('T')[0];
+            const domingoStr = domingo.toISOString().split('T')[0];
+            
+            // Período: inputs ou default semana atual
             const inputInicio = document.getElementById('agendaDataInicio');
             const inputFim = document.getElementById('agendaDataFim');
-            let dataInicio = inputInicio && inputInicio.value ? inputInicio.value : '';
-            let dataFim = inputFim && inputFim.value ? inputFim.value : '';
+            let dataInicio = inputInicio && inputInicio.value ? inputInicio.value : segundaStr;
+            let dataFim = inputFim && inputFim.value ? inputFim.value : domingoStr;
             
-            if (!dataInicio || !dataFim) {
-                const base = new Date();
-                const start = new Date(base);
-                const end = new Date(base);
-                end.setDate(end.getDate() + 7);
-                dataInicio = start.toISOString().split('T')[0];
-                dataFim = end.toISOString().split('T')[0];
-                if (inputInicio && !inputInicio.value) inputInicio.value = dataInicio;
-                if (inputFim && !inputFim.value) inputFim.value = dataFim;
+            // Se não tiver valores, usar semana atual
+            if (!inputInicio.value) {
+                inputInicio.value = segundaStr;
+                dataInicio = segundaStr;
+            }
+            if (!inputFim.value) {
+                inputFim.value = domingoStr;
+                dataFim = domingoStr;
             }
             
+            // Filtrar: só atividades FUTURAS (após hoje)
             const agendadas = dados
                 .filter(t => {
                     if (!t || !t.agenda || t.status === 'Concluído') return false;
                     if (!dataValida(t.agenda) || !dataValida(dataInicio) || !dataValida(dataFim)) return false;
-                    return t.agenda >= dataInicio && t.agenda <= dataFim;
+                    // Só atividades futuras (após hoje) dentro do período selecionado
+                    return t.agenda > hojeStr && t.agenda >= dataInicio && t.agenda <= dataFim;
                 })
                 .sort((a, b) => a.agenda.localeCompare(b.agenda));
             
@@ -3003,14 +3047,26 @@
         }
         
         function updateStats() {
+            // Obter filtros de período (se existirem)
+            const inputInicio = document.getElementById('statsDataInicio');
+            const inputFim = document.getElementById('statsDataFim');
+            let dataInicio = inputInicio && inputInicio.value ? inputInicio.value : null;
+            let dataFim = inputFim && inputFim.value ? inputFim.value : null;
+            
             // CORREÇÃO: Suspenso não aparece em estatísticas
             const temasAtivos = dados.filter(t => t.status !== 'Suspenso');
             document.getElementById('statTemas').textContent = temasAtivos.length;
             
-            // Filtrar histórico de temas suspensos
-            const historicoAtivo = historico.filter(h => {
+            // Filtrar histórico de temas suspensos E por período (se filtro aplicado)
+            let historicoAtivo = historico.filter(h => {
                 const tema = dados.find(t => String(t.id) === String(h.temaId));
-                return tema && tema.status !== 'Suspenso';
+                if (!tema || tema.status === 'Suspenso') return false;
+                
+                // Aplicar filtro de período se existir
+                if (dataInicio && dataFim && dataValida(h.data)) {
+                    return h.data >= dataInicio && h.data <= dataFim;
+                }
+                return true;
             });
             
             const totalSessoes = historicoAtivo.length;
@@ -3034,6 +3090,11 @@
                         totalQuestoesTotal += parseInt(match[2]);
                     }
                 }
+                // Também considerar tempoQuestoes e quantQuestoes se existirem
+                if (h.tempoQuestoes && h.quantQuestoes) {
+                    totalQuestoesTotal += parseInt(h.quantQuestoes) || 0;
+                    totalQuestoesAcertos += parseInt(h.quantQuestoesAcertos) || 0;
+                }
             });
             document.getElementById('statQuestoes').textContent = totalQuestoesTotal > 0 
                 ? `${totalQuestoesAcertos}/${totalQuestoesTotal}` 
@@ -3046,6 +3107,35 @@
             renderChartBarras();
             renderChartLinha();
             renderChartRadar();
+        }
+        
+        // Funções de filtro para estatísticas
+        function filtrarStatsSemanaAtual() {
+            const hoje = new Date();
+            const diaSemana = hoje.getDay();
+            const segunda = new Date(hoje);
+            const domingo = new Date(hoje);
+            const offsetSeg = (diaSemana === 0 ? -6 : 1 - diaSemana);
+            segunda.setDate(hoje.getDate() + offsetSeg);
+            domingo.setDate(segunda.getDate() + 6);
+            
+            document.getElementById('statsDataInicio').value = segunda.toISOString().split('T')[0];
+            document.getElementById('statsDataFim').value = domingo.toISOString().split('T')[0];
+            aplicarFiltroStats();
+        }
+        
+        function filtrarStatsMesAtual() {
+            const hoje = new Date();
+            const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+            const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+            
+            document.getElementById('statsDataInicio').value = primeiroDia.toISOString().split('T')[0];
+            document.getElementById('statsDataFim').value = ultimoDia.toISOString().split('T')[0];
+            aplicarFiltroStats();
+        }
+        
+        function aplicarFiltroStats() {
+            updateStats();
         }
         
         // ==================== GRÁFICOS POR ÁREA! ====================
@@ -3652,7 +3742,16 @@
                 renderDados();
             }
             if (sectionId === 'tarefa') renderTarefas();
-            if (sectionId === 'agenda') renderAgenda();
+            if (sectionId === 'agenda') {
+                // Inicializar com semana atual se não tiver valores
+                const inputInicio = document.getElementById('agendaDataInicio');
+                const inputFim = document.getElementById('agendaDataFim');
+                if (!inputInicio.value || !inputFim.value) {
+                    filtrarSemanaAtual();
+                } else {
+                    renderAgenda();
+                }
+            }
             if (sectionId === 'stats') updateStats();
             if (sectionId === 'historico') renderHistorico();
             if (sectionId === 'pendencias') renderPendencias();
@@ -5632,8 +5731,13 @@
                 const questoesTexto = document.getElementById('feedbackQuestoes').value.trim() || '';
                 const flashcards = parseInt(document.getElementById('feedbackFlashcards').value) || 0;
                 
+                // Tempo por atividade (dos novos boxes discretos)
+                const tempoQuestoesInput = document.getElementById('feedbackTempoQuestoes');
+                const tempoFlashcardsInput = document.getElementById('feedbackTempoFlashcards');
+                let tempoQuestoes = tempoQuestoesInput ? parseInt(tempoQuestoesInput.value) || 0 : 0;
+                let tempoFlashcards = tempoFlashcardsInput ? parseInt(tempoFlashcardsInput.value) || 0 : 0;
+                
                 // Extrair dados de questões (formato: acertos/total)
-                let tempoQuestoes = 0;
                 let quantQuestoes = 0;
                 let quantQuestoesAcertos = 0;
                 if (questoesTexto && questoesTexto.includes('/')) {
@@ -5641,18 +5745,19 @@
                     quantQuestoesAcertos = parseInt(partes[0]) || 0;
                     quantQuestoes = parseInt(partes[1]) || 0;
                 }
-                // Tentar obter tempo de questões do modal ou usar 0
+                
+                // Se não tiver tempo de questões no box mas tiver no modal, usar do modal
                 const modal = document.getElementById('encerrarSessaoModal');
-                if (modal && modal.dataset.tempoQuestoes) {
+                if (tempoQuestoes === 0 && modal && modal.dataset.tempoQuestoes) {
                     tempoQuestoes = parseInt(modal.dataset.tempoQuestoes) || 0;
                 }
                 
                 // Extrair dados de flashcards
-                let tempoFlashcards = 0;
                 let quantFlashcards = 0;
                 if (flashcards > 0) {
                     quantFlashcards = flashcards;
-                    if (modal && modal.dataset.tempoFlashcards) {
+                    // Se não tiver tempo de flashcards no box mas tiver no modal, usar do modal
+                    if (tempoFlashcards === 0 && modal && modal.dataset.tempoFlashcards) {
                         tempoFlashcards = parseInt(modal.dataset.tempoFlashcards) || 0;
                     }
                 }

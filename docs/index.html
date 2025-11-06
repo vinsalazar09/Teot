@@ -6265,6 +6265,15 @@
                     localStorage.setItem('vrvs_dados', JSON.stringify(dados));
                     localStorage.setItem('vrvs_historico', JSON.stringify(historico));
                     
+                    mostrarNotificacaoFeedback('✅ Feedback salvo com sucesso!');
+                    return true;
+                } catch (error) {
+                    console.error('❌ Erro ao salvar feedback direto:', error);
+                    mostrarNotificacaoFeedback('❌ Erro ao salvar feedback. Tente novamente.', 'error');
+                    return false;
+                }
+            }
+            
             // Função GLOBAL para salvar feedback após confirmação - FUNCIONA GARANTIDAMENTE
             window.salvarFeedbackConfirmado = function() {
                 console.log('💾 salvarFeedbackConfirmado() chamada');

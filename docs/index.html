@@ -365,6 +365,10 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
             position: relative;
             overflow: hidden;
+            pointer-events: auto !important;
+            z-index: 10;
+            user-select: none;
+            -webkit-user-select: none;
         }
         
         .btn:hover {
@@ -377,6 +381,12 @@
         
         .btn:active {
             transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
         }
         
         .btn-secondary {
@@ -4490,7 +4500,8 @@
             }
         }
         
-        function toggleCronometro() {
+        // Funções GLOBAIS do cronômetro - FUNCIONAM GARANTIDAMENTE
+        window.toggleCronometro = function() {
             if (intervaloAtivo) {
                 mostrarNotificacaoFeedback('⚠️ Termine o intervalo primeiro!', 'error');
                 return;
@@ -4520,15 +4531,15 @@
                 iniciarCronometroContagem();
                 document.getElementById('cronometroToggle').textContent = '⏸️ Pausar';
             }
-        }
+        };
         
-        function pausarCronometro() {
+        window.pausarCronometro = function() {
             if (cronometroRodando) {
                 toggleCronometro();
             }
-        }
+        };
         
-        function iniciarIntervalo() {
+        window.iniciarIntervalo = function() {
             if (!cronometroRodando && cronometroSegundos === 0) {
                 mostrarNotificacaoFeedback('⚠️ Inicie o cronômetro primeiro!', 'error');
                 return;
@@ -4592,9 +4603,9 @@
                 
                 salvarEstadoCronometro(); // Salvar estado quando inicia intervalo
             }
-        }
+        };
         
-        function resetCronometro() {
+        window.resetCronometro = function() {
             if (cronometroInterval) {
                 clearInterval(cronometroInterval);
                 cronometroInterval = null;
@@ -6195,40 +6206,189 @@
                     localStorage.setItem('vrvs_dados', JSON.stringify(dados));
                     localStorage.setItem('vrvs_historico', JSON.stringify(historico));
                     
+            // Função GLOBAL para salvar feedback após confirmação - FUNCIONA GARANTIDAMENTE
+            window.salvarFeedbackConfirmado = function() {
+                console.log('💾 salvarFeedbackConfirmado() chamada');
+                try {
+                    // IMPORTANTE: Recarregar dados do localStorage antes de processar feedback (fix para iOS)
+                    dados = JSON.parse(localStorage.getItem('vrvs_dados') || '[]');
+                    if (Array.isArray(dados)) {
+                        dados = dados.map(d => fixAreaTemaObjeto(d));
+                    }
+                    historico = JSON.parse(localStorage.getItem('vrvs_historico') || '[]');
+                    
+                    const modal = document.getElementById('confirmarFeedbackModal');
+                    if (!modal) {
+                        throw new Error('Modal de confirmação não encontrado');
+                    }
+                    
+                    const temaId = modal.dataset.temaId;
+                    if (!temaId) {
+                        throw new Error('TemaId não encontrado no modal');
+                    }
+                    
+                    // Obter dados do modal de confirmação (com ajustes manuais do usuário)
+                    const confirmarDataEl = document.getElementById('confirmarData');
+                    const confirmarRendimentoEl = document.getElementById('confirmarRendimento');
+                    const confirmarTempoEl = document.getElementById('confirmarTempo');
+                    const confirmarTempoIntervaloEl = document.getElementById('confirmarTempoIntervalo');
+                    const confirmarNumIntervalosEl = document.getElementById('confirmarNumIntervalos');
+                    const confirmarTempoQuestoesEl = document.getElementById('confirmarTempoQuestoes');
+                    const confirmarQuestoesEl = document.getElementById('confirmarQuestoes');
+                    const confirmarTempoFlashcardsEl = document.getElementById('confirmarTempoFlashcards');
+                    const confirmarFlashcardsEl = document.getElementById('confirmarFlashcards');
+                    const confirmarSugestaoEl = document.getElementById('confirmarSugestao');
+                    const confirmarObsEl = document.getElementById('confirmarObs');
+                    
+                    if (!confirmarDataEl || !confirmarRendimentoEl) {
+                        throw new Error('Campos do modal não encontrados');
+                    }
+                    
+                    const dataSessao = confirmarDataEl.value;
+                    const rendimento = parseInt(confirmarRendimentoEl.value);
+                    const tempo = confirmarTempoEl ? parseInt(confirmarTempoEl.value) || 0 : 0;
+                    const tempoIntervalo = confirmarTempoIntervaloEl ? parseInt(confirmarTempoIntervaloEl.value) || 0 : 0;
+                    const numeroIntervalos = confirmarNumIntervalosEl ? parseInt(confirmarNumIntervalosEl.value) || 0 : 0;
+                    const tempoQuestoes = confirmarTempoQuestoesEl ? parseInt(confirmarTempoQuestoesEl.value) || 0 : 0;
+                    const questoesTexto = confirmarQuestoesEl ? confirmarQuestoesEl.value.trim() || '' : '';
+                    const tempoFlashcards = confirmarTempoFlashcardsEl ? parseInt(confirmarTempoFlashcardsEl.value) || 0 : 0;
+                    const quantFlashcards = confirmarFlashcardsEl ? parseInt(confirmarFlashcardsEl.value) || 0 : 0;
+                    const sugestao = confirmarSugestaoEl ? confirmarSugestaoEl.value.trim() : '';
+                    const obs = confirmarObsEl ? confirmarObsEl.value.trim() : '';
+                    
+                    // Extrair dados de questões
+                    let quantQuestoes = 0;
+                    let quantQuestoesAcertos = 0;
+                    if (questoesTexto && questoesTexto.includes('/')) {
+                        const partes = questoesTexto.split('/');
+                        quantQuestoesAcertos = parseInt(partes[0]) || 0;
+                        quantQuestoes = parseInt(partes[1]) || 0;
+                    }
+                    
+                    // Extrair intervalos texto se necessário
+                    const intervalosTexto = numeroIntervalos > 0 ? `Intervalos: ${numeroIntervalos}` : '';
+                    
+                    // CORREÇÃO: Comparação correta de IDs
+                    const tema = dados.find(t => String(t.id) === String(temaId));
+                    if (!tema) {
+                        mostrarNotificacaoFeedback('⚠️ Módulo não encontrado! Selecione um módulo válido.', 'error');
+                        return false;
+                    }
+                    
+                    // Atualizar contador80
+                    if (rendimento >= 80) {
+                        tema.contador80 = (tema.contador80 || 0) + 1;
+                    } else {
+                        tema.contador80 = 0;
+                    }
+                    
+                    // Atualizar dados do tema
+                    tema.rendimento = rendimento / 100;
+                    tema.sessoes = (tema.sessoes || 0) + 1;
+                    tema.ultEstudo = dataSessao;
+                    tema.agenda = calcularProximaRevisao(tema, dataSessao);
+                    tema.tempo = (tema.tempo || 0) + tempo;
+                    tema.status = tema.sessoes === 1 ? 'Em estudo' : tema.status;
+                    
+                    // Adicionar observações E sugestão
+                    let novaObs = '';
+                    if (obs) novaObs = `${dataSessao}: ${obs}`;
+                    
+                    // Adicionar novos dados às observações se preenchidos
+                    if (questoesTexto) {
+                        novaObs += (novaObs ? ' | ' : '') + `Q${questoesTexto}`;
+                    }
+                    if (quantFlashcards > 0) {
+                        novaObs += (novaObs ? ' | ' : '') + `FC${quantFlashcards}`;
+                    }
+                    
+                    if (sugestao) novaObs += (novaObs ? ' | ' : '') + `Sugestão: ${sugestao}`;
+                    
+                    if (novaObs) {
+                        tema.observacoes = tema.observacoes 
+                            ? tema.observacoes + '\n' + novaObs
+                            : novaObs;
+                    }
+                    
+                    // SALVAR SUGESTÃO NO TEMA
+                    tema.sugestao = sugestao || '';
+                    
+                    // ADICIONAR AO HISTÓRICO
+                    const { area: areaCorrigida, tema: temaCorrigido } = fixAreaTema(tema.area, tema.tema);
+                    historico.push({
+                        id: Date.now(),
+                        temaId: tema.id,
+                        area: areaCorrigida,
+                        tema: temaCorrigido,
+                        rendimento: rendimento / 100,
+                        tempo: tempo,
+                        tempoIntervalo: tempoIntervalo,
+                        numeroIntervalos: numeroIntervalos,
+                        intervalos: intervalosTexto,
+                        tempoQuestoes: tempoQuestoes,
+                        quantQuestoes: quantQuestoes,
+                        quantQuestoesAcertos: quantQuestoesAcertos,
+                        tempoFlashcards: tempoFlashcards,
+                        quantFlashcards: quantFlashcards,
+                        questoes: questoesTexto,
+                        flashcards: quantFlashcards,
+                        data: dataSessao,
+                        observacoes: obs || '-',
+                        sugestao: sugestao || '-'
+                    });
+                    
+                    localStorage.setItem('vrvs_dados', JSON.stringify(dados));
+                    localStorage.setItem('vrvs_historico', JSON.stringify(historico));
+                    
                     // Limpar formulário
-                    document.getElementById('feedbackForm').reset();
-                    document.getElementById('feedbackData').value = new Date().toISOString().split('T')[0];
-                    document.getElementById('feedbackNumeroIntervalos').value = '0';
-                    document.getElementById('feedbackIntervalos').value = '';
-                    document.getElementById('feedbackQuestoes').value = '';
-                    document.getElementById('feedbackFlashcards').value = '';
+                    const feedbackForm = document.getElementById('feedbackForm');
+                    if (feedbackForm) feedbackForm.reset();
+                    const feedbackData = document.getElementById('feedbackData');
+                    if (feedbackData) feedbackData.value = new Date().toISOString().split('T')[0];
+                    const feedbackNumeroIntervalos = document.getElementById('feedbackNumeroIntervalos');
+                    if (feedbackNumeroIntervalos) feedbackNumeroIntervalos.value = '0';
+                    const feedbackIntervalos = document.getElementById('feedbackIntervalos');
+                    if (feedbackIntervalos) feedbackIntervalos.value = '';
+                    const feedbackQuestoes = document.getElementById('feedbackQuestoes');
+                    if (feedbackQuestoes) feedbackQuestoes.value = '';
+                    const feedbackFlashcards = document.getElementById('feedbackFlashcards');
+                    if (feedbackFlashcards) feedbackFlashcards.value = '';
                     const tempoQuestoesInput = document.getElementById('feedbackTempoQuestoes');
                     const tempoFlashcardsInput = document.getElementById('feedbackTempoFlashcards');
                     if (tempoQuestoesInput) tempoQuestoesInput.value = '';
                     if (tempoFlashcardsInput) tempoFlashcardsInput.value = '';
                     
                     // Resetar cronômetro após salvar
-                    resetCronometro();
+                    if (typeof resetCronometro === 'function') {
+                        resetCronometro();
+                    }
+                    
+                    // Fechar modal
+                    window.closeConfirmarFeedbackModal();
                     
                     // NOTIFICAÇÃO DE SUCESSO!
                     const proximaData = formatarData(tema.agenda);
                     mostrarNotificacaoFeedback(`✅ Performance registrada!<br>📅 Próxima revisão: ${proximaData}`);
                     
                     // Atualizar todas as visualizações
-                    renderDados();
-                    renderTarefas();
-                    renderAgenda();
-                    renderPendencias();
-                    updateFeedbackSelect();
-                    renderHistorico();
-                    updateStats();
+                    if (typeof renderDados === 'function') renderDados();
+                    if (typeof renderTarefas === 'function') renderTarefas();
+                    if (typeof renderAgenda === 'function') renderAgenda();
+                    if (typeof renderPendencias === 'function') renderPendencias();
+                    if (typeof updateFeedbackSelect === 'function') updateFeedbackSelect();
+                    if (typeof renderHistorico === 'function') renderHistorico();
+                    if (typeof updateStats === 'function') updateStats();
+                    
+                    console.log('✅ Feedback salvo com sucesso');
+                    return true;
                     
                 } catch (error) {
                     console.error('❌ Erro ao salvar feedback:', error);
-                    mostrarNotificacaoFeedback('❌ Erro ao salvar feedback. Tente novamente.', 'error');
+                    console.error('❌ Stack trace:', error.stack);
+                    mostrarNotificacaoFeedback(`❌ Erro ao salvar: ${error.message || 'Erro desconhecido'}. Verifique o console (F12).`, 'error');
                     return false;
                 }
-            }
+            };
             
             // Função GLOBAL para fechar modal de confirmação - FUNCIONA GARANTIDAMENTE
             window.closeConfirmarFeedbackModal = function() {

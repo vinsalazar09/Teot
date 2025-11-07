@@ -5884,7 +5884,24 @@
             
             // Registrar Service Worker para funcionamento offline e atualizações automáticas
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then((registration) => {
+                // FORÇAR limpeza: desregistrar service workers antigos antes de registrar novo
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    return Promise.all(registrations.map(registration => {
+                        console.log('🗑️ Removendo service worker antigo:', registration.scope);
+                        return registration.unregister();
+                    }));
+                }).then(() => {
+                    // Limpar todos os caches antigos
+                    return caches.keys().then(cacheNames => {
+                        return Promise.all(cacheNames.map(cacheName => {
+                            console.log('🗑️ Removendo cache antigo:', cacheName);
+                            return caches.delete(cacheName);
+                        }));
+                    });
+                }).then(() => {
+                    // Agora registrar novo service worker
+                    return navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' });
+                }).then((registration) => {
                     console.log('✅ Service Worker registrado com sucesso:', registration.scope);
                     
                     // Detectar quando há nova versão disponível

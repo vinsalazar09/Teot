@@ -1032,6 +1032,32 @@
             transform: rotate(90deg) scale(0.9);
         }
         
+        /* MODAL BODY - CORES CLARAS PARA LEGIBILIDADE */
+        .modal-body {
+            color: #FDF6E3; /* Luz solarizada claro */
+        }
+        
+        .modal-body p,
+        .modal-body li,
+        .modal-body strong {
+            color: #FDF6E3; /* Luz solarizada claro */
+        }
+        
+        .modal-body ul {
+            color: #FDF6E3; /* Luz solarizada claro */
+        }
+        
+        #tutorialConteudo {
+            color: #FDF6E3 !important; /* Luz solarizada claro - força cor */
+        }
+        
+        #tutorialConteudo p,
+        #tutorialConteudo li,
+        #tutorialConteudo strong,
+        #tutorialConteudo ul {
+            color: #FDF6E3 !important; /* Luz solarizada claro */
+        }
+        
         /* SCROLL BAR CUSTOM */
         ::-webkit-scrollbar {
             width: 8px;
@@ -2750,16 +2776,26 @@
             dados = temasUnicos;
             
             // LIMPAR DADOS INCONSISTENTES: se sessoes === 0 e status é 'Não iniciado' ou 'Planejado', rendimento deve ser 0
+            let dadosCorrigidos = false;
             dados.forEach(t => {
-                if ((t.sessoes === 0 || !t.sessoes) && 
-                    (t.status === 'Não iniciado' || t.status === 'Planejado') && 
-                    t.rendimento && t.rendimento > 0) {
-                    console.log(`🔧 Corrigindo rendimento inconsistente: ${t.tema} (sessoes: ${t.sessoes}, status: ${t.status}, rendimento: ${t.rendimento} -> 0)`);
+                const sessoesZero = (t.sessoes === 0 || !t.sessoes || t.sessoes === '0');
+                const statusInvalido = (t.status === 'Não iniciado' || t.status === 'Planejado');
+                const temRendimentoInvalido = (t.rendimento && t.rendimento > 0);
+                
+                if (sessoesZero && statusInvalido && temRendimentoInvalido) {
+                    console.log(`🔧 [MACBOOK FIX] Corrigindo rendimento inconsistente: ${t.tema} (sessoes: ${t.sessoes}, status: ${t.status}, rendimento: ${t.rendimento} -> 0)`);
                     t.rendimento = 0;
+                    dadosCorrigidos = true;
                 }
             });
             
-            // Salvar dados limpos
+            // Se corrigiu dados, salvar imediatamente
+            if (dadosCorrigidos) {
+                console.log('💾 [MACBOOK FIX] Salvando dados corrigidos no localStorage');
+                localStorage.setItem('vrvs_dados', JSON.stringify(dados));
+            }
+            
+            // Sempre salvar dados limpos (mesmo sem correções)
             localStorage.setItem('vrvs_dados', JSON.stringify(dados));
             
             // Atualizar variável global
@@ -5390,95 +5426,95 @@
             {
                 titulo: "🎯 Bem-vindo ao VRVS!",
                 conteudo: `
-                    <p style="margin-bottom: 15px;">Olá! Este é o <strong>VRVS</strong> - seu sistema de gestão de estudos.</p>
-                    <p style="margin-bottom: 15px;">Vou te mostrar rapidamente como usar cada funcionalidade.</p>
-                    <p style="color: rgba(0,206,209,0.8);">📱 Dica: Você pode instalar como app no seu celular!</p>
+                    <p style="margin-bottom: 15px; color: #FDF6E3 !important;">Olá! Este é o <strong style="color: #FDF6E3 !important;">VRVS</strong> - seu sistema de gestão de estudos.</p>
+                    <p style="margin-bottom: 15px; color: #FDF6E3 !important;">Vou te mostrar rapidamente como usar cada funcionalidade.</p>
+                    <p style="color: #B58900 !important;">📱 Dica: Você pode instalar como app no seu celular!</p>
                 `
             },
             {
                 titulo: "📊 Banco de Dados",
                 conteudo: `
-                    <p style="margin-bottom: 10px;"><strong>Aqui você:</strong></p>
-                    <ul style="margin-left: 20px; line-height: 1.8;">
-                        <li>✅ Adiciona novos temas para estudar</li>
-                        <li>✅ Define área, status e prioridade</li>
-                        <li>✅ Visualiza todos seus temas</li>
-                        <li>✅ Edita ou remove temas</li>
+                    <p style="margin-bottom: 10px; color: #FDF6E3 !important;"><strong style="color: #FDF6E3 !important;">Aqui você:</strong></p>
+                    <ul style="margin-left: 20px; line-height: 1.8; color: #FDF6E3 !important;">
+                        <li style="color: #FDF6E3 !important;">✅ Adiciona novos temas para estudar</li>
+                        <li style="color: #FDF6E3 !important;">✅ Define área, status e prioridade</li>
+                        <li style="color: #FDF6E3 !important;">✅ Visualiza todos seus temas</li>
+                        <li style="color: #FDF6E3 !important;">✅ Edita ou remove temas</li>
                     </ul>
-                    <p style="margin-top: 15px; color: rgba(0,206,209,0.8);">É a base de tudo!</p>
+                    <p style="margin-top: 15px; color: #B58900 !important;">É a base de tudo!</p>
                 `
             },
             {
                 titulo: "📋 Missões do Dia",
                 conteudo: `
-                    <p style="margin-bottom: 10px;"><strong>Tarefas de hoje e atrasadas:</strong></p>
-                    <ul style="margin-left: 20px; line-height: 1.8;">
-                        <li>🎯 Mostra o que você precisa estudar HOJE</li>
-                        <li>⏱️ Opção de registrar tempo por atividade</li>
-                        <li>💡 Diretrizes personalizadas para cada tema</li>
+                    <p style="margin-bottom: 10px; color: #FDF6E3 !important;"><strong style="color: #FDF6E3 !important;">Tarefas de hoje e atrasadas:</strong></p>
+                    <ul style="margin-left: 20px; line-height: 1.8; color: #FDF6E3 !important;">
+                        <li style="color: #FDF6E3 !important;">🎯 Mostra o que você precisa estudar HOJE</li>
+                        <li style="color: #FDF6E3 !important;">⏱️ Opção de registrar tempo por atividade</li>
+                        <li style="color: #FDF6E3 !important;">💡 Diretrizes personalizadas para cada tema</li>
                     </ul>
                 `
             },
             {
                 titulo: "📅 Agenda",
                 conteudo: `
-                    <p style="margin-bottom: 10px;"><strong>Timeline dos próximos dias:</strong></p>
-                    <ul style="margin-left: 20px; line-height: 1.8;">
-                        <li>📆 Filtre por período (semana, mês)</li>
-                        <li>🔍 Visualize o que vem pela frente</li>
-                        <li>📌 Organize suas revisões</li>
+                    <p style="margin-bottom: 10px; color: #FDF6E3 !important;"><strong style="color: #FDF6E3 !important;">Timeline dos próximos dias:</strong></p>
+                    <ul style="margin-left: 20px; line-height: 1.8; color: #FDF6E3 !important;">
+                        <li style="color: #FDF6E3 !important;">📆 Filtre por período (semana, mês)</li>
+                        <li style="color: #FDF6E3 !important;">🔍 Visualize o que vem pela frente</li>
+                        <li style="color: #FDF6E3 !important;">📌 Organize suas revisões</li>
                     </ul>
                 `
             },
             {
                 titulo: "💬 Feedback de Sessão",
                 conteudo: `
-                    <p style="margin-bottom: 10px;"><strong>Registre cada sessão de estudos:</strong></p>
-                    <ul style="margin-left: 20px; line-height: 1.8;">
-                        <li>⏱️ Use o cronômetro integrado</li>
-                        <li>📊 Avalie seu rendimento</li>
-                        <li>❓ Registre questões e flashcards</li>
-                        <li>📝 Adicione observações</li>
+                    <p style="margin-bottom: 10px; color: #FDF6E3 !important;"><strong style="color: #FDF6E3 !important;">Registre cada sessão de estudos:</strong></p>
+                    <ul style="margin-left: 20px; line-height: 1.8; color: #FDF6E3 !important;">
+                        <li style="color: #FDF6E3 !important;">⏱️ Use o cronômetro integrado</li>
+                        <li style="color: #FDF6E3 !important;">📊 Avalie seu rendimento</li>
+                        <li style="color: #FDF6E3 !important;">❓ Registre questões e flashcards</li>
+                        <li style="color: #FDF6E3 !important;">📝 Adicione observações</li>
                     </ul>
-                    <p style="margin-top: 15px; color: rgba(0,206,209,0.8);">Todos os dados são salvos automaticamente!</p>
+                    <p style="margin-top: 15px; color: #B58900 !important;">Todos os dados são salvos automaticamente!</p>
                 `
             },
             {
                 titulo: "📈 Estatísticas e Análises",
                 conteudo: `
-                    <p style="margin-bottom: 10px;"><strong>Acompanhe seu progresso:</strong></p>
-                    <ul style="margin-left: 20px; line-height: 1.8;">
-                        <li>📊 Gráficos de performance</li>
-                        <li>⏱️ Análises de tempo (opcional)</li>
-                        <li>📉 Identificação de pontos fracos</li>
-                        <li>🎯 Métricas por área e tema</li>
+                    <p style="margin-bottom: 10px; color: #FDF6E3 !important;"><strong style="color: #FDF6E3 !important;">Acompanhe seu progresso:</strong></p>
+                    <ul style="margin-left: 20px; line-height: 1.8; color: #FDF6E3 !important;">
+                        <li style="color: #FDF6E3 !important;">📊 Gráficos de performance</li>
+                        <li style="color: #FDF6E3 !important;">⏱️ Análises de tempo (opcional)</li>
+                        <li style="color: #FDF6E3 !important;">📉 Identificação de pontos fracos</li>
+                        <li style="color: #FDF6E3 !important;">🎯 Métricas por área e tema</li>
                     </ul>
                 `
             },
             {
                 titulo: "📌 Extras e Backup",
                 conteudo: `
-                    <p style="margin-bottom: 10px;"><strong>Outras funcionalidades:</strong></p>
-                    <ul style="margin-left: 20px; line-height: 1.8;">
-                        <li>📌 Lembretes personalizados</li>
-                        <li>📔 Caderno de anotações</li>
-                        <li>📤 Exportar dados (CSV)</li>
-                        <li>📥 Importar dados</li>
+                    <p style="margin-bottom: 10px; color: #FDF6E3 !important;"><strong style="color: #FDF6E3 !important;">Outras funcionalidades:</strong></p>
+                    <ul style="margin-left: 20px; line-height: 1.8; color: #FDF6E3 !important;">
+                        <li style="color: #FDF6E3 !important;">📌 Lembretes personalizados</li>
+                        <li style="color: #FDF6E3 !important;">📔 Caderno de anotações</li>
+                        <li style="color: #FDF6E3 !important;">📤 Exportar dados (CSV)</li>
+                        <li style="color: #FDF6E3 !important;">📥 Importar dados</li>
                     </ul>
-                    <p style="margin-top: 15px; color: rgba(0,206,209,0.8);">💾 Tudo é salvo localmente no seu navegador!</p>
+                    <p style="margin-top: 15px; color: #B58900 !important;">💾 Tudo é salvo localmente no seu navegador!</p>
                 `
             },
             {
                 titulo: "✅ Pronto para começar!",
                 conteudo: `
-                    <p style="margin-bottom: 15px;">Agora você conhece todas as funcionalidades!</p>
-                    <p style="margin-bottom: 15px;"><strong>Próximos passos:</strong></p>
-                    <ol style="margin-left: 20px; line-height: 1.8;">
-                        <li>Adicione seus primeiros temas na aba "Dados"</li>
-                        <li>Configure a agenda</li>
-                        <li>Comece a estudar e registre suas sessões</li>
+                    <p style="margin-bottom: 15px; color: #FDF6E3 !important;">Agora você conhece todas as funcionalidades!</p>
+                    <p style="margin-bottom: 15px; color: #FDF6E3 !important;"><strong style="color: #FDF6E3 !important;">Próximos passos:</strong></p>
+                    <ol style="margin-left: 20px; line-height: 1.8; color: #FDF6E3 !important;">
+                        <li style="color: #FDF6E3 !important;">Adicione seus primeiros temas na aba "Dados"</li>
+                        <li style="color: #FDF6E3 !important;">Configure a agenda</li>
+                        <li style="color: #FDF6E3 !important;">Comece a estudar e registre suas sessões</li>
                     </ol>
-                    <p style="margin-top: 15px; color: var(--turquesa-light);">❓ Dúvidas? Use o botão de ajuda no canto da tela!</p>
+                    <p style="margin-top: 15px; color: #B58900 !important;">❓ Dúvidas? Use o botão de ajuda no canto da tela!</p>
                 `
             }
         ];

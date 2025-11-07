@@ -2749,19 +2749,6 @@
             });
             dados = temasUnicos;
             
-            // CORREÇÃO: Limpar rendimento inconsistente (rendimento sem sessões)
-            dados.forEach(t => {
-                const sessoes = t.sessoes || 0;
-                const status = t.status || 'Não iniciado';
-                // Se não tem sessões e está como "Não iniciado" ou "Planejado", não deveria ter rendimento
-                if (sessoes === 0 && (status === 'Não iniciado' || status === 'Planejado')) {
-                    if (t.rendimento && t.rendimento > 0) {
-                        console.log(`🔧 Limpando rendimento inconsistente: ${t.tema} (${t.rendimento})`);
-                        t.rendimento = 0;
-                    }
-                }
-            });
-            
             // Salvar dados limpos
             localStorage.setItem('vrvs_dados', JSON.stringify(dados));
             

@@ -2766,24 +2766,17 @@
             tbody.innerHTML = dados.map(t => {
                 const ultEstudo = formatarDataBR(t.ultEstudo);
                 const agenda = formatarDataBR(t.agenda);
-                
-                // CORREÇÃO: Se não iniciado (0 sessões E status "Não iniciado"/"Planejado"), não mostrar rendimento
-                // Mas se tem rendimento legítimo (de histórico), mostrar mesmo com 0 sessões (pode ser de importação)
-                const sessoes = t.sessoes || 0;
-                const status = t.status || 'Não iniciado';
-                const naoIniciado = (sessoes === 0 && (status === 'Não iniciado' || status === 'Planejado'));
-                
-                const rend = (naoIniciado || !t.rendimento) ? '-' : (Math.round(t.rendimento * 100) + '%');
-                const rendColor = naoIniciado ? 'rgba(255,255,255,0.5)' : (t.rendimento >= 0.8 ? '#00FFE0' : t.rendimento >= 0.5 ? '#FFA366' : '#EF4444');
+                const rend = t.rendimento ? Math.round(t.rendimento * 100) + '%' : '-';
+                const rendColor = t.rendimento >= 0.8 ? '#00FFE0' : t.rendimento >= 0.5 ? '#FFA366' : '#EF4444';
                 
                 return `
                     <tr>
                         <td style="color: rgba(0,206,209,0.8);">${t.area || '-'}</td>
                         <td style="color: var(--cobre-light); font-weight: 600;">${t.tema || '-'}</td>
-                        <td style="text-align: center; color: rgba(255,255,255,0.7);">${status}</td>
+                        <td style="text-align: center; color: rgba(255,255,255,0.7);">${t.status || 'Não iniciado'}</td>
                         <td style="text-align: center; color: var(--cobre-main);">${t.prioridade || 3}</td>
                         <td style="text-align: center; color: ${rendColor};">${rend}</td>
-                        <td style="text-align: center; color: rgba(255,255,255,0.7);">${sessoes}</td>
+                        <td style="text-align: center; color: rgba(255,255,255,0.7);">${t.sessoes || 0}</td>
                         <td style="text-align: center; color: rgba(255,255,255,0.6); font-size: 11px;">${ultEstudo}</td>
                         <td style="text-align: center; color: rgba(255,255,255,0.6); font-size: 11px;">${agenda}</td>
                         <td style="text-align: center;">

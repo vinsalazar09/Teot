@@ -3701,47 +3701,121 @@
                         campos: dadosCSV[0] ? Object.keys(dadosCSV[0]) : []
                     });
                     
-                    dados = dadosCSV.map(t => {
+                    // CARREGAR DADOS EXISTENTES DO LOCALSTORAGE (NÃO SUBSTITUIR!)
+                    const dadosExistentes = JSON.parse(localStorage.getItem('vrvs_dados') || '[]');
+                    console.log(`📥 [IMPORT DEBUG] Dados existentes no localStorage:`, {
+                        total: dadosExistentes.length
+                    });
+                    
+                    // Processar dados importados
+                    const dadosImportados = dadosCSV.map(t => {
                         if (!t.id) t.id = Date.now() + Math.random();
                         // Normalizar área/tema corretamente
                         const { area, tema } = fixAreaTema(t.area || '', t.tema || '');
                         t.area = area;
                         t.tema = tema;
-                        if (t.rendimento && t.rendimento > 1) t.rendimento = t.rendimento / 100;
-                        // Preservar campos se já existirem, senão usar defaults
-                        t.prioridade = t.prioridade !== undefined ? parseInt(t.prioridade) || 3 : 3;
-                        t.sessoes = t.sessoes !== undefined ? parseInt(t.sessoes) || 0 : 0;
-                        t.tempo = t.tempo !== undefined ? parseInt(t.tempo) || 0 : 0;
-                        t.contador80 = t.contador80 !== undefined ? parseInt(t.contador80) || 0 : 0;
-                        // Preservar status se existir
-                        if (!t.status) t.status = t.sessoes > 0 ? 'Em estudo' : 'Não iniciado';
-                        // Preservar ultEstudo e agenda se existirem
+                        
+                        // PRESERVAR TODOS OS CAMPOS DO CSV DE DADOS
+                        // Rendimento: se > 1, dividir por 100 (está em %)
+                        if (t.rendimento !== undefined) {
+                            t.rendimento = (t.rendimento > 1) ? t.rendimento / 100 : t.rendimento;
+                        } else {
+                            t.rendimento = 0;
+                        }
+                        
+                        // Garantir tipos corretos com valores padrão se não existirem
+                        t.prioridade = (t.prioridade !== undefined) ? parseInt(t.prioridade) || 3 : 3;
+                        t.sessoes = (t.sessoes !== undefined) ? parseInt(t.sessoes) || 0 : 0;
+                        t.tempo = (t.tempo !== undefined) ? parseInt(t.tempo) || 0 : 0;
+                        t.contador80 = (t.contador80 !== undefined) ? parseInt(t.contador80) || 0 : 0;
+                        
+                        // Status: preservar se existir, senão calcular baseado em sessoes
+                        if (!t.status) {
+                            t.status = t.sessoes > 0 ? 'Em estudo' : 'Não iniciado';
+                        }
+                        
+                        // Preservar ultEstudo e agenda se existirem (não sobrescrever)
                         if (!t.ultEstudo && t.sessoes === 0) t.ultEstudo = '';
                         if (!t.agenda && t.sessoes === 0) t.agenda = '';
+                        
+                        // Preservar dificuldade se existir
+                        if (!t.dificuldade) t.dificuldade = '';
+                        
+                        // Sugestão: extrair de observacoes se não existir
                         if (!t.sugestao || t.sugestao === '-') {
                             t.sugestao = extrairUltimaSugestao(t.observacoes);
                         }
-                        delete t.tipoRevisao;
+                        
+                        // REMOVER apenas campos que não pertencem a DADOS (caso CSV tenha campos mistos)
+                        delete t.tempoIntervalo;
+                        delete t.numeroIntervalos;
+                        delete t.intervalos;
+                        delete t.tempoQuestoes;
+                        delete t.quantQuestoes;
+                        delete t.quantQuestoesAcertos;
+                        delete t.tempoFlashcards;
+                        delete t.quantFlashcards;
+                        delete t.questoes;
+                        delete t.flashcards;
+                        delete t.data; // 'data' em DADOS é campo vazio, não deve existir
+                        
+                        delete t.tipoRevisao; // Campo antigo que não existe mais
+                        
+                        // PRESERVAR CAMPOS EXTRAS que possam existir no CSV
+                        // (não deletar campos que não conhecemos - podem ser dados importantes)
+                        
                         return t;
                     });
                     
-                    console.log(`📥 [IMPORT DEBUG] Dados processados:`, {
-                        total: dados.length,
+                    // MESCLAR dados existentes com dados importados
+                    // Estratégia: usar área+tema como chave única
+                    const dadosMesclados = [...dadosExistentes];
+                    const chavesExistentes = new Set();
+                    dadosExistentes.forEach(d => {
+                        const chave = `${String(d.area).toLowerCase().trim()}_${String(d.tema).toLowerCase().trim()}`;
+                        chavesExistentes.add(chave);
+                    });
+                    
+                    dadosImportados.forEach(d => {
+                        const chave = `${String(d.area).toLowerCase().trim()}_${String(d.tema).toLowerCase().trim()}`;
+                        if (chavesExistentes.has(chave)) {
+                            // Tema já existe: MESCLAR campos (preservar dados existentes, atualizar com dados importados)
+                            const index = dadosMesclados.findIndex(ex => {
+                                const chaveEx = `${String(ex.area).toLowerCase().trim()}_${String(ex.tema).toLowerCase().trim()}`;
+                                return chaveEx === chave;
+                            });
+                            if (index >= 0) {
+                                // Mesclar: dados importados têm prioridade, mas preservar campos extras existentes
+                                const existente = dadosMesclados[index];
+                                Object.keys(d).forEach(key => {
+                                    if (d[key] !== undefined && d[key] !== null && d[key] !== '') {
+                                        existente[key] = d[key];
+                                    }
+                                });
+                                // Preservar campos extras do existente que não estão no importado
+                                Object.keys(existente).forEach(key => {
+                                    if (d[key] === undefined && existente[key] !== undefined) {
+                                        // Campo existe apenas no existente, preservar
+                                    }
+                                });
+                            }
+                        } else {
+                            // Tema novo: ADICIONAR
+                            dadosMesclados.push(d);
+                            chavesExistentes.add(chave);
+                        }
+                    });
+                    
+                    dados = dadosMesclados;
+                    
+                    console.log(`📥 [IMPORT DEBUG] Dados processados e mesclados:`, {
+                        totalExistente: dadosExistentes.length,
+                        totalImportado: dadosImportados.length,
+                        totalFinal: dados.length,
                         primeiroItem: dados[0],
                         campos: dados[0] ? Object.keys(dados[0]) : []
                     });
                     
-                    // Remover duplicatas antes de salvar
-                    const temasUnicos = [];
-                    const chavesVistas = new Set();
-                    dados.forEach(t => {
-                        const chave = `${String(t.area).toLowerCase().trim()}_${String(t.tema).toLowerCase().trim()}`;
-                        if (!chavesVistas.has(chave)) {
-                            chavesVistas.add(chave);
-                            temasUnicos.push(t);
-                        }
-                    });
-                    dados = temasUnicos;
                     localStorage.setItem('vrvs_dados', JSON.stringify(dados));
                     // Atualizar variável global
                     window.dados = dados;
@@ -3757,18 +3831,32 @@
             
             if (historicoFile) {
                 promises.push(parseCSV(historicoFile).then(historicoCSV => {
-                    historico = historicoCSV.map(h => {
+                    console.log(`📥 [IMPORT DEBUG] Histórico CSV parseado:`, {
+                        total: historicoCSV.length,
+                        primeiroItem: historicoCSV[0],
+                        campos: historicoCSV[0] ? Object.keys(historicoCSV[0]) : []
+                    });
+                    
+                    // CARREGAR HISTÓRICO EXISTENTE DO LOCALSTORAGE (NÃO SUBSTITUIR!)
+                    const historicoExistente = JSON.parse(localStorage.getItem('vrvs_historico') || '[]');
+                    console.log(`📥 [IMPORT DEBUG] Histórico existente no localStorage:`, {
+                        total: historicoExistente.length
+                    });
+                    
+                    // Processar histórico importado
+                    const historicoImportado = historicoCSV.map(h => {
                         if (!h.id) h.id = Date.now() + Math.random();
                         // Normalizar área/tema corretamente
                         const { area, tema } = fixAreaTema(h.area || '', h.tema || '');
                         
-                        // Criar objeto limpo apenas com campos do histórico (remover campos de dados)
+                        // CRIAR OBJETO LIMPO APENAS COM CAMPOS DO HISTÓRICO
+                        // Mas preservar campos extras que possam existir no CSV
                         const historicoLimpo = {
                             id: h.id,
                             temaId: h.temaId || '',
                             area: area,
                             tema: tema,
-                            rendimento: (h.rendimento > 1 ? h.rendimento / 100 : (h.rendimento || 0)),
+                            rendimento: (h.rendimento !== undefined && h.rendimento > 1) ? h.rendimento / 100 : (h.rendimento || 0),
                             tempo: parseInt(h.tempo) || 0,
                             tempoIntervalo: parseInt(h.tempoIntervalo) || 0,
                             numeroIntervalos: parseInt(h.numeroIntervalos) || 0,
@@ -3785,20 +3873,86 @@
                             sugestao: h.sugestao || ''
                         };
                         
+                        // PRESERVAR CAMPOS EXTRAS que possam existir no CSV
+                        Object.keys(h).forEach(key => {
+                            // Campos conhecidos já foram mapeados acima
+                            const camposConhecidos = ['id', 'temaId', 'area', 'tema', 'rendimento', 'tempo',
+                                'tempoIntervalo', 'numeroIntervalos', 'intervalos', 'tempoQuestoes',
+                                'quantQuestoes', 'quantQuestoesAcertos', 'tempoFlashcards', 'quantFlashcards',
+                                'questoes', 'flashcards', 'data', 'observacoes', 'sugestao'];
+                            if (!camposConhecidos.includes(key) && h[key] !== undefined && h[key] !== null) {
+                                historicoLimpo[key] = h[key];
+                            }
+                        });
+                        
+                        // Extrair data de observacoes se não existir
                         if (!historicoLimpo.data || historicoLimpo.data === '-') {
                             const obsMatch = (historicoLimpo.observacoes || '').match(/^(\d{4}-\d{2}-\d{2}):/);
                             if (obsMatch) {
                                 historicoLimpo.data = obsMatch[1];
                             }
                         }
+                        
+                        // Extrair sugestão de observacoes se não existir
                         if (!historicoLimpo.sugestao || historicoLimpo.sugestao === '-') {
                             historicoLimpo.sugestao = extrairUltimaSugestao(historicoLimpo.observacoes);
                         }
+                        
                         return historicoLimpo;
                     });
+                    
+                    // MESCLAR histórico existente com histórico importado
+                    // Estratégia: usar ID como chave única (se ID existe e é válido)
+                    const historicoMesclado = [...historicoExistente];
+                    const idsExistentes = new Set();
+                    historicoExistente.forEach(h => {
+                        if (h.id) idsExistentes.add(String(h.id));
+                    });
+                    
+                    historicoImportado.forEach(h => {
+                        if (h.id && idsExistentes.has(String(h.id))) {
+                            // Registro já existe: MESCLAR (preservar dados existentes, atualizar com dados importados)
+                            const index = historicoMesclado.findIndex(ex => String(ex.id) === String(h.id));
+                            if (index >= 0) {
+                                const existente = historicoMesclado[index];
+                                Object.keys(h).forEach(key => {
+                                    if (h[key] !== undefined && h[key] !== null && h[key] !== '') {
+                                        existente[key] = h[key];
+                                    }
+                                });
+                                // Preservar campos extras do existente
+                                Object.keys(existente).forEach(key => {
+                                    if (h[key] === undefined && existente[key] !== undefined) {
+                                        // Campo existe apenas no existente, preservar
+                                    }
+                                });
+                            }
+                        } else {
+                            // Registro novo: ADICIONAR
+                            historicoMesclado.push(h);
+                            if (h.id) idsExistentes.add(String(h.id));
+                        }
+                    });
+                    
+                    historico = historicoMesclado;
+                    
+                    console.log(`📥 [IMPORT DEBUG] Histórico processado e mesclado:`, {
+                        totalExistente: historicoExistente.length,
+                        totalImportado: historicoImportado.length,
+                        totalFinal: historico.length,
+                        primeiroItem: historico[0],
+                        campos: historico[0] ? Object.keys(historico[0]) : []
+                    });
+                    
                     localStorage.setItem('vrvs_historico', JSON.stringify(historico));
                     // Atualizar variável global
                     window.historico = historico;
+                    
+                    console.log(`✅ [IMPORT DEBUG] Histórico salvo no localStorage:`, {
+                        total: historico.length,
+                        primeiroItem: historico[0]
+                    });
+                    
                     return 'historico';
                 }));
             }
@@ -3864,25 +4018,51 @@
                         const headerMap = {};
                         headersNormalizados.forEach((h, i) => { headerMap[h] = i; });
                         
-                        console.log(`📥 [CSV DEBUG] Headers detectados:`, {
-                            originais: headers,
-                            normalizados: headersNormalizados,
-                            headerMap: headerMap
+                        // DETECTAR TIPO DE CSV UMA VEZ NO INÍCIO
+                        // CSV de DADOS tem campos: status, prioridade, sessoes, ultEstudo, agenda
+                        // CSV de HISTÓRICO tem campos: temaId, tempoIntervalo, numeroIntervalos, data
+                        const temStatus = headerMap['status'] !== undefined;
+                        const temPrioridade = headerMap['prioridade'] !== undefined;
+                        const temSessoes = headerMap['sessoes'] !== undefined;
+                        const temUltEstudo = headerMap['ultestudo'] !== undefined;
+                        const temAgenda = headerMap['agenda'] !== undefined;
+                        const temTemaId = headerMap['temaid'] !== undefined;
+                        const temTempoIntervalo = headerMap['tempointervalo'] !== undefined;
+                        const temNumeroIntervalos = headerMap['numerointervalos'] !== undefined;
+                        const temData = headerMap['data'] !== undefined;
+                        
+                        const isCSVDados = (temStatus || temPrioridade || temSessoes || temUltEstudo || temAgenda) && !temTemaId;
+                        const isCSVHistorico = temTemaId && (temData || temTempoIntervalo || temNumeroIntervalos);
+                        
+                        console.log(`📥 [CSV DEBUG] Tipo detectado:`, {
+                            tipo: isCSVDados ? 'DADOS' : (isCSVHistorico ? 'HISTORICO' : 'INDETERMINADO'),
+                            headers: headers,
+                            temStatus,
+                            temPrioridade,
+                            temSessoes,
+                            temUltEstudo,
+                            temAgenda,
+                            temTemaId,
+                            temTempoIntervalo,
+                            temNumeroIntervalos,
+                            temData
                         });
                         
                         const getVal = (r, ...possiveisNomes) => {
                             for (const nome of possiveisNomes) {
                                 const idx = headerMap[nome];
-                                if (idx !== undefined && r[idx]) {
+                                if (idx !== undefined && r[idx] !== undefined && r[idx] !== '') {
                                     return stripOuterQuotes(r[idx]);
                                 }
                             }
                             return '';
                         };
+                        
                         const data = rows.slice(1).map((r, lineNum) => {
+                            
+                            // OBJETO BASE COM CAMPOS COMUNS
                             const obj = {
                                 id: getVal(r, 'id') || `${Date.now()}_${lineNum}`,
-                                temaId: getVal(r, 'temaid'),
                                 area: getVal(r, 'area'),
                                 tema: getVal(r, 'tema'),
                                 rendimento: (() => {
@@ -3893,42 +4073,62 @@
                                     return val > 1 ? val / 100 : val;
                                 })(),
                                 tempo: parseInt(getVal(r, 'tempo', 'tempomin')) || 0,
-                                tempoIntervalo: parseInt(getVal(r, 'tempointervalo')) || 0,
-                                numeroIntervalos: parseInt(getVal(r, 'numerointervalos')) || 0,
-                                intervalos: getVal(r, 'intervalos') || '',
-                                tempoQuestoes: parseInt(getVal(r, 'tempoquestoes')) || 0,
-                                quantQuestoes: parseInt(getVal(r, 'quantquestoes')) || 0,
-                                quantQuestoesAcertos: parseInt(getVal(r, 'quantquestoesacertos')) || 0,
-                                tempoFlashcards: parseInt(getVal(r, 'tempoflashcards')) || 0,
-                                quantFlashcards: parseInt(getVal(r, 'quantflashcards')) || 0,
-                                questoes: getVal(r, 'questoes') || '',
-                                flashcards: parseInt(getVal(r, 'flashcards')) || 0,
-                                data: getVal(r, 'data'),
                                 observacoes: getVal(r, 'observacoes', 'obs', 'observacao') || '',
                                 sugestao: getVal(r, 'sugestao', 'sugestoes') || ''
                             };
                             
-                            // CAMPOS ESPECÍFICOS DO CSV DE DADOS (se existirem no CSV)
-                            const statusVal = getVal(r, 'status');
-                            if (statusVal) obj.status = statusVal;
+                            // CAMPOS ESPECÍFICOS DO CSV DE DADOS
+                            if (isCSVDados) {
+                                obj.status = getVal(r, 'status') || 'Não iniciado';
+                                obj.prioridade = parseInt(getVal(r, 'prioridade', 'prior')) || 3;
+                                obj.sessoes = parseInt(getVal(r, 'sessoes', 'sessao')) || 0;
+                                obj.ultEstudo = getVal(r, 'ultestudo', 'ultimoestudo') || '';
+                                obj.agenda = getVal(r, 'agenda') || '';
+                                obj.dificuldade = getVal(r, 'dificuldade', 'dific') || '';
+                                obj.contador80 = parseInt(getVal(r, 'contador80', 'contador')) || 0;
+                                obj.temaId = getVal(r, 'temaid') || '';
+                                // Campos de histórico não devem estar em DADOS
+                                obj.tempoIntervalo = undefined;
+                                obj.numeroIntervalos = undefined;
+                                obj.intervalos = undefined;
+                                obj.tempoQuestoes = undefined;
+                                obj.quantQuestoes = undefined;
+                                obj.quantQuestoesAcertos = undefined;
+                                obj.tempoFlashcards = undefined;
+                                obj.quantFlashcards = undefined;
+                                obj.questoes = undefined;
+                                obj.flashcards = undefined;
+                                obj.data = undefined;
+                            }
                             
-                            const prioridadeVal = getVal(r, 'prioridade', 'prior');
-                            if (prioridadeVal) obj.prioridade = parseInt(prioridadeVal) || 3;
+                            // CAMPOS ESPECÍFICOS DO CSV DE HISTÓRICO
+                            if (isCSVHistorico) {
+                                obj.temaId = getVal(r, 'temaid') || '';
+                                obj.tempoIntervalo = parseInt(getVal(r, 'tempointervalo')) || 0;
+                                obj.numeroIntervalos = parseInt(getVal(r, 'numerointervalos')) || 0;
+                                obj.intervalos = getVal(r, 'intervalos') || '';
+                                obj.tempoQuestoes = parseInt(getVal(r, 'tempoquestoes')) || 0;
+                                obj.quantQuestoes = parseInt(getVal(r, 'quantquestoes')) || 0;
+                                obj.quantQuestoesAcertos = parseInt(getVal(r, 'quantquestoesacertos')) || 0;
+                                obj.tempoFlashcards = parseInt(getVal(r, 'tempoflashcards')) || 0;
+                                obj.quantFlashcards = parseInt(getVal(r, 'quantflashcards')) || 0;
+                                obj.questoes = getVal(r, 'questoes') || '';
+                                obj.flashcards = parseInt(getVal(r, 'flashcards')) || 0;
+                                obj.data = getVal(r, 'data') || '';
+                                // Campos de dados não devem estar em HISTÓRICO
+                                obj.status = undefined;
+                                obj.prioridade = undefined;
+                                obj.sessoes = undefined;
+                                obj.ultEstudo = undefined;
+                                obj.agenda = undefined;
+                                obj.dificuldade = undefined;
+                                obj.contador80 = undefined;
+                            }
                             
-                            const sessoesVal = getVal(r, 'sessoes', 'sessao');
-                            if (sessoesVal) obj.sessoes = parseInt(sessoesVal) || 0;
-                            
-                            const ultEstudoVal = getVal(r, 'ultestudo', 'ultimoestudo');
-                            if (ultEstudoVal) obj.ultEstudo = ultEstudoVal;
-                            
-                            const agendaVal = getVal(r, 'agenda');
-                            if (agendaVal) obj.agenda = agendaVal;
-                            
-                            const dificuldadeVal = getVal(r, 'dificuldade', 'dific');
-                            if (dificuldadeVal) obj.dificuldade = dificuldadeVal;
-                            
-                            const contador80Val = getVal(r, 'contador80', 'contador');
-                            if (contador80Val) obj.contador80 = parseInt(contador80Val) || 0;
+                            // Remover campos undefined para manter objeto limpo
+                            Object.keys(obj).forEach(key => {
+                                if (obj[key] === undefined) delete obj[key];
+                            });
                             
                             return obj;
                         }).filter(obj => obj.tema && obj.tema.trim() !== '');
@@ -4004,39 +4204,147 @@
         }
         
         function exportarDados() {
-            const csv = dados2CSV(dados);
+            // ESTRUTURA FIXA E COMPLETA PARA EXPORTAÇÃO DE DADOS
+            // Garantir ordem consistente e todos os campos necessários
+            // IMPORTANTE: Preservar TODOS os campos, incluindo campos extras não mapeados
+            const dadosExport = dados.map(t => {
+                const obj = {
+                    id: t.id || '',
+                    area: t.area || '',
+                    tema: t.tema || '',
+                    status: t.status || 'Não iniciado',
+                    prioridade: t.prioridade !== undefined ? t.prioridade : 3,
+                    dificuldade: t.dificuldade || '',
+                    rendimento: t.rendimento !== undefined ? t.rendimento : 0,
+                    sessoes: t.sessoes !== undefined ? t.sessoes : 0,
+                    ultEstudo: t.ultEstudo || '',
+                    agenda: t.agenda || '',
+                    tempo: t.tempo !== undefined ? t.tempo : 0,
+                    observacoes: t.observacoes || '',
+                    contador80: t.contador80 !== undefined ? t.contador80 : 0,
+                    sugestao: t.sugestao || '',
+                    data: '', // Campo vazio para compatibilidade
+                    temaId: t.temaId || '' // Campo opcional
+                };
+                
+                // PRESERVAR CAMPOS EXTRAS que possam existir (para não perder dados)
+                Object.keys(t).forEach(key => {
+                    if (!obj.hasOwnProperty(key) && t[key] !== undefined && t[key] !== null) {
+                        obj[key] = t[key];
+                    }
+                });
+                
+                return obj;
+            });
+            
+            // Ordem fixa dos headers principais, mas incluir campos extras
+            const headersBase = [
+                'id', 'area', 'tema', 'status', 'prioridade', 'dificuldade',
+                'rendimento', 'sessoes', 'ultEstudo', 'agenda', 'tempo',
+                'observacoes', 'contador80', 'sugestao', 'data', 'temaId'
+            ];
+            
+            // Adicionar campos extras encontrados nos dados
+            const headersExtras = new Set();
+            dadosExport.forEach(obj => {
+                Object.keys(obj).forEach(key => {
+                    if (!headersBase.includes(key)) {
+                        headersExtras.add(key);
+                    }
+                });
+            });
+            
+            const headers = [...headersBase, ...Array.from(headersExtras)];
+            
+            const csv = dados2CSVComHeaders(dadosExport, headers);
             const hoje = obterDataBrasiliaString();
             downloadCSV(csv, `VRVS_DADOS_${hoje}.csv`);
         }
         
         function exportarHistorico() {
-            // Filtrar apenas campos relevantes do histórico (não incluir campos do tema)
-            const historicoLimpo = historico.map(h => {
-                return {
-                    id: h.id,
-                    temaId: h.temaId,
-                    area: h.area,
-                    tema: h.tema,
-                    rendimento: h.rendimento,
-                    tempo: h.tempo,
-                    tempoIntervalo: h.tempoIntervalo || 0,
-                    numeroIntervalos: h.numeroIntervalos || 0,
+            // ESTRUTURA FIXA E COMPLETA PARA EXPORTAÇÃO DE HISTÓRICO
+            // Garantir ordem consistente e todos os campos necessários
+            // IMPORTANTE: Preservar TODOS os campos, incluindo campos extras não mapeados
+            const historicoExport = historico.map(h => {
+                const obj = {
+                    id: h.id || '',
+                    temaId: h.temaId || '',
+                    area: h.area || '',
+                    tema: h.tema || '',
+                    rendimento: h.rendimento !== undefined ? h.rendimento : 0,
+                    tempo: h.tempo !== undefined ? h.tempo : 0,
+                    tempoIntervalo: h.tempoIntervalo !== undefined ? h.tempoIntervalo : 0,
+                    numeroIntervalos: h.numeroIntervalos !== undefined ? h.numeroIntervalos : 0,
                     intervalos: h.intervalos || '',
-                    tempoQuestoes: h.tempoQuestoes || 0,
-                    quantQuestoes: h.quantQuestoes || 0,
-                    quantQuestoesAcertos: h.quantQuestoesAcertos || 0,
-                    tempoFlashcards: h.tempoFlashcards || 0,
-                    quantFlashcards: h.quantFlashcards || 0,
+                    tempoQuestoes: h.tempoQuestoes !== undefined ? h.tempoQuestoes : 0,
+                    quantQuestoes: h.quantQuestoes !== undefined ? h.quantQuestoes : 0,
+                    quantQuestoesAcertos: h.quantQuestoesAcertos !== undefined ? h.quantQuestoesAcertos : 0,
+                    tempoFlashcards: h.tempoFlashcards !== undefined ? h.tempoFlashcards : 0,
+                    quantFlashcards: h.quantFlashcards !== undefined ? h.quantFlashcards : 0,
                     questoes: h.questoes || '',
-                    flashcards: h.flashcards || 0,
-                    data: h.data,
+                    flashcards: h.flashcards !== undefined ? h.flashcards : 0,
+                    data: h.data || '',
                     observacoes: h.observacoes || '',
                     sugestao: h.sugestao || ''
                 };
+                
+                // PRESERVAR CAMPOS EXTRAS que possam existir (para não perder dados)
+                Object.keys(h).forEach(key => {
+                    if (!obj.hasOwnProperty(key) && h[key] !== undefined && h[key] !== null) {
+                        obj[key] = h[key];
+                    }
+                });
+                
+                return obj;
             });
-            const csv = dados2CSV(historicoLimpo);
+            
+            // Ordem fixa dos headers principais, mas incluir campos extras
+            const headersBase = [
+                'id', 'temaId', 'area', 'tema', 'rendimento', 'tempo',
+                'tempoIntervalo', 'numeroIntervalos', 'intervalos',
+                'tempoQuestoes', 'quantQuestoes', 'quantQuestoesAcertos',
+                'tempoFlashcards', 'quantFlashcards', 'questoes', 'flashcards',
+                'data', 'observacoes', 'sugestao'
+            ];
+            
+            // Adicionar campos extras encontrados no histórico
+            const headersExtras = new Set();
+            historicoExport.forEach(obj => {
+                Object.keys(obj).forEach(key => {
+                    if (!headersBase.includes(key)) {
+                        headersExtras.add(key);
+                    }
+                });
+            });
+            
+            const headers = [...headersBase, ...Array.from(headersExtras)];
+            
+            const csv = dados2CSVComHeaders(historicoExport, headers);
             const hoje = obterDataBrasiliaString();
             downloadCSV(csv, `VRVS_HISTORICO_${hoje}.csv`);
+        }
+        
+        // Função auxiliar para CSV com headers fixos
+        function dados2CSVComHeaders(arr, headers) {
+            if (arr.length === 0) {
+                return headers.join(',');
+            }
+            
+            const rows = arr.map(obj => {
+                return headers.map(h => {
+                    const val = (obj && obj[h] != null) ? obj[h] : '';
+                    const strVal = String(val);
+                    // Escapar aspas duplas
+                    const escaped = strVal.replace(/"/g, '""');
+                    // Se contém vírgula, quebra de linha ou aspas, precisa estar entre aspas
+                    if (escaped.includes(',') || escaped.includes('\n') || escaped.includes('\r') || escaped.includes('"')) {
+                        return `"${escaped}"`;
+                    }
+                    return escaped;
+                }).join(',');
+            });
+            
+            return [headers.join(','), ...rows].join('\n');
         }
         
         function salvarDadosManualmente() {

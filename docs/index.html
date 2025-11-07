@@ -3674,19 +3674,34 @@
                     // Atualizar variável global de histórico
                     historico = JSON.parse(localStorage.getItem('vrvs_historico') || '[]');
                     
+                    // FORÇAR atualização da variável global de dados
+                    dados = JSON.parse(localStorage.getItem('vrvs_dados') || '[]');
+                    window.dados = dados;
+                    
+                    console.log('📥 Dados importados:', dados.length, 'temas');
+                    console.log('📥 Primeiros 3 temas:', dados.slice(0, 3).map(t => ({
+                        tema: t.tema,
+                        sessoes: t.sessoes,
+                        rendimento: t.rendimento,
+                        status: t.status
+                    })));
+                    
                     const msg = results.map(r => r === 'dados' ? 'Dados' : 'Histórico').join(' e ');
                     mostrarNotificacaoFeedback(`✅ ${msg} importados com sucesso!`);
                     document.getElementById('importDados').value = '';
                     document.getElementById('importHistorico').value = '';
                     
-                    // Re-renderizar TUDO após importação
-                    renderDados();
-                    renderTarefas();
-                    renderAgenda();
-                    renderHistorico();
-                    renderPendencias();
-                    updateFeedbackSelect();
-                    updateStats();
+                    // Re-renderizar TUDO após importação (com pequeno delay para garantir que localStorage foi atualizado)
+                    setTimeout(() => {
+                        console.log('🔄 Renderizando após importação...');
+                        renderDados();
+                        renderTarefas();
+                        renderAgenda();
+                        renderHistorico();
+                        renderPendencias();
+                        updateFeedbackSelect();
+                        updateStats();
+                    }, 100);
                 })
                 .catch(error => {
                     mostrarNotificacaoFeedback(`❌ Erro: ${error.message}`, 'error');

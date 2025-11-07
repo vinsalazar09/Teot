@@ -4196,12 +4196,18 @@
             let totalQuestoesAcertos = 0;
             let totalQuestoesTotal = 0;
             historicoFiltrado.forEach(h => {
+                // Verificar campo questoes (formato string "15/20")
                 if (h.questoes) {
                     const match = h.questoes.match(/(\d+)\/(\d+)/);
                     if (match) {
                         totalQuestoesAcertos += parseInt(match[1]);
                         totalQuestoesTotal += parseInt(match[2]);
                     }
+                }
+                // CORREÇÃO: Também considerar quantQuestoes e quantQuestoesAcertos se existirem
+                if (h.quantQuestoes && parseInt(h.quantQuestoes) > 0) {
+                    totalQuestoesTotal += parseInt(h.quantQuestoes) || 0;
+                    totalQuestoesAcertos += parseInt(h.quantQuestoesAcertos) || 0;
                 }
             });
             const taxaAcertoQuestoes = totalQuestoesTotal > 0 
@@ -4234,6 +4240,7 @@
                         porArea[tema.area].tempo += h.tempo || 0;
                         porArea[tema.area].rendimento += h.rendimento || 0;
                         
+                        // Verificar campo questoes (formato string "15/20")
                         if (h.questoes) {
                             const match = h.questoes.match(/(\d+)\/(\d+)/);
                             if (match) {
@@ -4241,6 +4248,12 @@
                                 porArea[tema.area].questoes.total += parseInt(match[2]);
                             }
                         }
+                        // CORREÇÃO: Também considerar quantQuestoes e quantQuestoesAcertos se existirem
+                        if (h.quantQuestoes && parseInt(h.quantQuestoes) > 0) {
+                            porArea[tema.area].questoes.total += parseInt(h.quantQuestoes) || 0;
+                            porArea[tema.area].questoes.acertos += parseInt(h.quantQuestoesAcertos) || 0;
+                        }
+                        
                         porArea[tema.area].flashcards += parseInt(h.flashcards) || 0;
                     }
                 });
@@ -4274,6 +4287,7 @@
                         porTema[temaKey].tempo += h.tempo || 0;
                         porTema[temaKey].rendimento += h.rendimento || 0;
                         
+                        // Verificar campo questoes (formato string "15/20")
                         if (h.questoes) {
                             const match = h.questoes.match(/(\d+)\/(\d+)/);
                             if (match) {
@@ -4281,6 +4295,12 @@
                                 porTema[temaKey].questoes.total += parseInt(match[2]);
                             }
                         }
+                        // CORREÇÃO: Também considerar quantQuestoes e quantQuestoesAcertos se existirem
+                        if (h.quantQuestoes && parseInt(h.quantQuestoes) > 0) {
+                            porTema[temaKey].questoes.total += parseInt(h.quantQuestoes) || 0;
+                            porTema[temaKey].questoes.acertos += parseInt(h.quantQuestoesAcertos) || 0;
+                        }
+                        
                         porTema[temaKey].flashcards += parseInt(h.flashcards) || 0;
                     }
                 });
@@ -5884,25 +5904,33 @@
             
             // Registrar Service Worker para funcionamento offline e atualizações automáticas
             if ('serviceWorker' in navigator) {
-                // FORÇAR limpeza: desregistrar service workers antigos antes de registrar novo
+                // FORÇAR limpeza completa: desregistrar service workers antigos antes de registrar novo
                 navigator.serviceWorker.getRegistrations().then(registrations => {
                     return Promise.all(registrations.map(registration => {
                         console.log('🗑️ Removendo service worker antigo:', registration.scope);
                         return registration.unregister();
                     }));
                 }).then(() => {
-                    // Limpar todos os caches antigos
+                    // Limpar TODOS os caches antigos (incluindo versões antigas)
                     return caches.keys().then(cacheNames => {
+                        console.log('🗑️ Caches encontrados:', cacheNames);
                         return Promise.all(cacheNames.map(cacheName => {
-                            console.log('🗑️ Removendo cache antigo:', cacheName);
+                            console.log('🗑️ Removendo cache:', cacheName);
                             return caches.delete(cacheName);
                         }));
                     });
                 }).then(() => {
-                    // Agora registrar novo service worker
+                    // Pequeno delay para garantir que limpeza foi concluída
+                    return new Promise(resolve => setTimeout(resolve, 100));
+                }).then(() => {
+                    // Agora registrar novo service worker com timestamp para evitar cache
+                    const swUrl = './sw.js?v=' + Date.now();
                     return navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' });
                 }).then((registration) => {
                     console.log('✅ Service Worker registrado com sucesso:', registration.scope);
+                    
+                    // Forçar atualização imediata
+                    registration.update();
                     
                     // Detectar quando há nova versão disponível
                     registration.addEventListener('updatefound', () => {
@@ -5919,7 +5947,7 @@
                                     
                                     // Recarregar página após 2 segundos para aplicar atualização
                                     setTimeout(() => {
-                                        window.location.reload();
+                                        window.location.reload(true); // true = força reload sem cache
                                     }, 2000);
                                 }
                             });
@@ -5930,9 +5958,6 @@
                     setInterval(() => {
                         registration.update();
                     }, 30000);
-                    
-                    // Verificar atualização ao carregar página
-                    registration.update();
                     
                     // Verificar atualização quando página volta ao foco (útil para iPhone)
                     document.addEventListener('visibilitychange', () => {

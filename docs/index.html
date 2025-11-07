@@ -2741,6 +2741,13 @@
             // SEMPRE recarregar dados do localStorage antes de renderizar (fix para iOS cache)
             const dadosRaw = JSON.parse(localStorage.getItem('vrvs_dados') || '[]');
             
+            console.log(`🔍 [MACBOOK DEBUG] Carregando dados do localStorage:`, {
+                dadosRawLength: dadosRaw.length,
+                dadosRaw: dadosRaw,
+                localStorageKey: 'vrvs_dados',
+                localStorageValue: localStorage.getItem('vrvs_dados') ? 'existe' : 'não existe'
+            });
+            
             if (!Array.isArray(dadosRaw)) {
                 console.error('❌ Dados não são um array:', dadosRaw);
                 dados = [];
@@ -5878,11 +5885,32 @@
         // FUNÇÃO DE LIMPEZA AGRESSIVA DE DADOS INCONSISTENTES (executa no carregamento)
         function limparDadosInconsistentes() {
             console.log('🔍 [MACBOOK FIX] Iniciando limpeza de dados inconsistentes...');
-            dados = JSON.parse(localStorage.getItem('vrvs_dados') || '[]');
+            
+            // VERIFICAR SE HÁ DADOS NO LOCALSTORAGE
+            const dadosRaw = localStorage.getItem('vrvs_dados');
+            console.log(`🔍 [MACBOOK DEBUG] localStorage.getItem('vrvs_dados'):`, {
+                existe: dadosRaw !== null,
+                tamanho: dadosRaw ? dadosRaw.length : 0,
+                preview: dadosRaw ? dadosRaw.substring(0, 200) : 'null'
+            });
+            
+            dados = JSON.parse(dadosRaw || '[]');
+            
+            console.log(`🔍 [MACBOOK DEBUG] Dados parseados:`, {
+                isArray: Array.isArray(dados),
+                length: dados.length,
+                primeiroItem: dados.length > 0 ? dados[0] : null
+            });
             
             if (!Array.isArray(dados)) {
                 console.error('❌ [MACBOOK FIX] Dados não são um array');
                 dados = [];
+                return;
+            }
+            
+            if (dados.length === 0) {
+                console.warn('⚠️ [MACBOOK FIX] localStorage está VAZIO! Não há dados para limpar.');
+                console.log('💡 [MACBOOK FIX] Dica: Os dados precisam ser importados ou criados neste navegador.');
                 return;
             }
             

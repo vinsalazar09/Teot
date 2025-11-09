@@ -1197,24 +1197,49 @@
     </div>
     
     <!-- BOTÃO FLUTUANTE DE AJUDA -->
-    <button id="btnAjudaFlutuante" onclick="showSection('tutorial')" style="
+    <div id="btnAjudaFlutuanteContainer" style="
         position: fixed;
         bottom: 20px;
         right: 20px;
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--turquesa-main), var(--turquesa-dark));
-        border: 2px solid var(--turquesa-light);
-        color: white;
-        font-size: 24px;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0, 206, 209, 0.4);
         z-index: 9999;
-        transition: all 0.3s ease;
-    " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
-        ❓
-    </button>
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+    ">
+        <button id="btnAjudaFlutuante" onclick="showSection('tutorial')" style="
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--turquesa-main), var(--turquesa-dark));
+            border: 2px solid var(--turquesa-light);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 206, 209, 0.4);
+            transition: all 0.3s ease;
+        " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+            ❓
+        </button>
+        <button id="btnFecharTutorial" onclick="ocultarBotaoTutorial()" style="
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.9);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Fechar tutorial">
+            ×
+        </button>
+    </div>
     
     <!-- MODAL TUTORIAL INTERATIVO -->
     <div id="tutorialModal" class="modal">
@@ -2154,7 +2179,21 @@
                 return;
             }
             
+            // Ordenação: matérias estudadas ontem (primeira sessão) têm prioridade máxima
+            const ontem = new Date();
+            ontem.setDate(ontem.getDate() - 1);
+            const ontemStr = ontem.toISOString().split('T')[0];
+            
             tarefas.sort((a, b) => {
+                // Verificar se foi estudado ontem e é primeira sessão (prioridade máxima)
+                const aEstudadoOntem = (a.ultEstudo === ontemStr) && (a.sessoes === 1);
+                const bEstudadoOntem = (b.ultEstudo === ontemStr) && (b.sessoes === 1);
+                
+                // Se um foi estudado ontem e o outro não, priorizar o estudado ontem
+                if (aEstudadoOntem && !bEstudadoOntem) return -1;
+                if (!aEstudadoOntem && bEstudadoOntem) return 1;
+                
+                // Se ambos ou nenhum foi estudado ontem, ordenar por agenda e prioridade
                 if (a.agenda !== b.agenda) return a.agenda.localeCompare(b.agenda);
                 return (b.prioridade || 0) - (a.prioridade || 0);
             });
@@ -2167,6 +2206,7 @@
                 const isHoje = t.agenda === hoje;
                 const camposTempoAtivo = window.camposTempoVisiveis || false;
                 
+                // Padronizar layout: primeira linha (área e prioridade), segunda linha (rendimento, sessões e data)
                 return `
                 <div class="task-item priority-${t.prioridade || 3}">
                     <div class="task-name">${t.tema} ${isHoje ? '🎯' : ''}</div>
@@ -2174,6 +2214,9 @@
                     <div class="task-details">
                         <div class="task-detail-item">📚 ${t.area}</div>
                         <div class="task-detail-item">⭐ Prior: ${t.prioridade || 3}</div>
+                    </div>
+                    
+                    <div class="task-details">
                         <div class="task-detail-item" style="color: ${rendColor};">📊 ${rendPct}%</div>
                         <div class="task-detail-item">📢 ${t.sessoes || 0} sessões</div>
                         <div class="task-detail-item">📅 ${formatarDataBR(t.agenda)}</div>
@@ -4779,6 +4822,25 @@
             document.getElementById('tutorialModal').style.display = 'none';
             localStorage.setItem('vrvs_tutorial_completo', 'true');
         }
+        
+        function ocultarBotaoTutorial() {
+            const container = document.getElementById('btnAjudaFlutuanteContainer');
+            if (container) {
+                container.style.display = 'none';
+                localStorage.setItem('vrvs_tutorial_oculto', 'true');
+            }
+        }
+        
+        // Verificar se o botão deve estar oculto ao carregar
+        window.addEventListener('DOMContentLoaded', function() {
+            const tutorialOculto = localStorage.getItem('vrvs_tutorial_oculto');
+            if (tutorialOculto === 'true') {
+                const container = document.getElementById('btnAjudaFlutuanteContainer');
+                if (container) {
+                    container.style.display = 'none';
+                }
+            }
+        });
         
         // ==================== VÍDEO ANIMADO TUTORIAL ====================
         
